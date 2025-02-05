@@ -23,7 +23,7 @@ function LandingNav() {
               </a>
             </li>
             <li className=" btn m-1">
-              <a href="Login.html" className="text-decoration-none">
+              <a href="login.html" className="text-decoration-none">
                 Log-in
               </a>
             </li>
