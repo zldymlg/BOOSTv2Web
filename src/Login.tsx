@@ -9,6 +9,7 @@ function Login() {
     <React.Fragment>
       <Header />
       <LandingNav />
+
       <Footer />
     </React.Fragment>
   );
