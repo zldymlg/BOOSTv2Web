@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import "./Contentland.css";
 import Logo from "/src/assets/Logo.svg";
-import Arrowbtn from "/src/assets/Arrow_btn.svg";
 import Video from "/src/assets/TeamworkLandingPage.mp4";
+import Pomodoro from "/src/assets/Pomodoro.png";
+import Todo from "/src/assets/Todolist.jpeg";
+import Brainstorming from "/src/assets/Brainstorming.jpg";
+import Tracker from "/src/assets/Tracker.jpeg";
+import Reward from "/src/assets/Reward.png";
+import Focus from "/src/assets/Focus.jpg";
 
 function Contentland() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -35,7 +40,7 @@ function Contentland() {
           </li>
         </ul>
       </div>
-      <div className="video-container">
+      <div className="video-container d-flex justify-self-center">
         <video
           id="custom-video"
           className="video-player"
@@ -62,6 +67,9 @@ function Contentland() {
       <div className="container">
         <div className="row">
           <h2 className="fw-semibold">Benefits</h2>
+          <div className="col-sm">
+            <li className="btn d-flex justify-content-end">View All</li>
+          </div>
         </div>
         <div className="row">
           <div className="col-sm-8">
@@ -69,70 +77,57 @@ function Contentland() {
             elit id imperdiet et. Cras eu sit dignissim lorem nibh et. Ac cum
             habitasse in velit fringilla feugiat senectus in.
           </div>
-          <div className="col-sm">
-            <li className="btn d-flex justify-content-end">View All</li>
-          </div>
         </div>
         <div className="row pt-5">
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">01</h1>
             <h5>Focus on your work task </h5>
-            <span>
+            <span className="pb-5">
               Fit your coursework around your existing commitments and
               obligations.
             </span>
-            <a id="arr-btn">
-              <img src={Arrowbtn} className="btn m-3 p-4" alt="Arrow" />
-            </a>
           </div>
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">02</h1>
             <h5>Improve your productivity</h5>
-            <span>
+            <span className="pb-5">
               Learn from industry experts who have hands-on experience in design
               and development.
             </span>
-            <a id="arr-btn">
-              <img src={Arrowbtn} className="btn m-3 p-4" alt="Arrow" />
-            </a>
           </div>
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">03</h1>
             <h5>Example</h5>
-            <span>Example</span>
-            <a id="arr-btn">
-              <img src={Arrowbtn} className="btn m-3 p-4" alt="Arrow" />
-            </a>
+            <span className="pb-5">Example</span>
           </div>
         </div>
         <div className="row pt-2">
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">04</h1>
             <h5>Example</h5>
-            <span>Example</span>
-            <a id="arr-btn">
-              <img src={Arrowbtn} className="btn m-3 p-4" alt="Arrow" />
-            </a>
+            <span className="pb-5">Example</span>
           </div>
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">05</h1>
             <h5>Example</h5>
-            <span>Example</span>
-            <a id="arr-btn">
-              <img src={Arrowbtn} className="btn m-3 p-4" alt="Arrow" />
-            </a>
+            <span className="pb-5">Example</span>
           </div>
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">06</h1>
             <h5>Example</h5>
-            <span>Example</span>
-            <a id="arr-btn">
-              <img src={Arrowbtn} className="btn m-3 p-4" alt="Arrow" />
-            </a>
+            <span className="pb-5">Example</span>
           </div>
         </div>
         <div className="row">
-          <h2 className="fw-semibold">Our Services</h2>
+          <div>
+            <div>
+              <h2 className="fw-semibold">Our Services</h2>
+            </div>
+            <div className="col-sm">
+              <li className="btn d-flex justify-content-end">View All</li>
+            </div>
+          </div>
+
           <div className="col-sm-8">
             <span>
               Lorem ipsum dolor sit amet consectetur. Tempus tincidunt etiam
@@ -140,13 +135,10 @@ function Contentland() {
               cum eget habitasse in velit fringilla feugiat senectus in.
             </span>
           </div>
-          <div className="col-sm">
-            <li className="btn d-flex justify-content-end">View All</li>
-          </div>
         </div>
         <div className="row d-flex justify-content-center">
           <div className="col-md-5 m-1 card">
-            <img alt="place holder" />
+            <img alt="place holder" src={Pomodoro} />
             <h5 className="fw-semibold m-3">Pomodoro Timer</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
@@ -154,7 +146,7 @@ function Contentland() {
             </a>
           </div>
           <div className="col-md-5 m-1 card">
-            <img alt="place holder" />
+            <img src={Todo} />
             <h5 className="fw-semibold m-3">To-Do List</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
@@ -164,7 +156,7 @@ function Contentland() {
         </div>
         <div className="row d-flex justify-content-center">
           <div className="col-md-5 m-1 card">
-            <img alt="place holder" />
+            <img alt="place holder" src={Brainstorming} />
             <h5 className="fw-semibold m-3">Brainstorming</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
@@ -172,7 +164,7 @@ function Contentland() {
             </a>
           </div>
           <div className="col-md-5 m-1 card">
-            <img alt="place holder" />
+            <img src={Tracker} />
             <h5 className="fw-semibold m-3">Tracker</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
@@ -182,15 +174,15 @@ function Contentland() {
         </div>
         <div className="row d-flex justify-content-center">
           <div className="col-md-5 m-1 card">
-            <img alt="place holder" />
-            <h5 className="fw-semibold m-3">Gamification Features</h5>
+            <img src={Reward} />
+            <h5 className="fw-semibold m-3">EXP and Achievement</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
               Know more!
             </a>
           </div>
           <div className="col-md-5 m-1 card">
-            <img alt="place holder" />
+            <img src={Focus} />
             <h5 className="fw-semibold m-3">Focus Mode</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">

@@ -8,9 +8,9 @@ function Footer() {
         <div className="col-md-4">
           <div className="mb-3">
             <img
-              src="/path-to-your-logo.png"
+              src="/src/assets/BOOSTWORD.png"
               alt="Logo"
-              style={{ width: "40px" }}
+              style={{ width: "30%" }}
             />
           </div>
           <p>
@@ -53,7 +53,7 @@ function Footer() {
               href="#"
               className="me-3"
               aria-label="Facebook"
-              style={{ fontSize: "1.5rem" }}
+              style={{ fontSize: "1.5rem", color: "#64703E" }}
             >
               <FaFacebook />
             </a>
@@ -61,11 +61,15 @@ function Footer() {
               href="#"
               className="me-3"
               aria-label="Twitter"
-              style={{ fontSize: "1.5rem" }}
+              style={{ fontSize: "1.5rem", color: "#64703E" }}
             >
               <FaTwitter />
             </a>
-            <a href="#" aria-label="LinkedIn" style={{ fontSize: "1.5rem" }}>
+            <a
+              href="#"
+              aria-label="LinkedIn"
+              style={{ fontSize: "1.5rem", color: "#64703E" }}
+            >
               <FaLinkedin />
             </a>
           </div>
