@@ -22,7 +22,7 @@ function Contentland() {
 
   return (
     <React.Fragment>
-      <h2 className="text-center fw-semibold">
+      <h2 className=" text-center fw-semibold">
         <img className="img-fluid" src={Logo} alt="Logo" />
         <span id="color1">Unlock</span> Your Potential, Boost Yourself!
       </h2>

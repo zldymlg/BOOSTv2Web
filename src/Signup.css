@@ -1,0 +1,59 @@
+#line-word1{
+    width: 100%; 
+    text-align: center; 
+    border-bottom: 1px solid white; 
+    line-height: 0.1em;
+    margin: 10px 0 20px; 
+ 
+}
+#line-word2{
+    background:transparent; 
+    padding:0 10px; 
+    color: #98989A;
+
+}
+#bg{
+    background-image: url(/src/assets/Login-Signup_bg.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 40rem;
+}
+#card-bg{
+    background-color: rgba(255, 255, 255, 0.1);
+    border:none;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+#color-text1{
+    color: #33592A;
+}
+#color-text2{
+    color: #305029;
+}
+
+
+#-or-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+#-line- {
+    flex: 1;
+    height: 1px;
+    background-color: white;
+}
+
+#-or- {
+    margin: 0 10px;
+    color: gray;
+}
+#login-btn{
+    color: white;
+    background-color:#64703E;
+}
+.input{
+    height: 10px;
+    width: 10px;
+}
