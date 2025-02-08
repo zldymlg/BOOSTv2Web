@@ -22,7 +22,7 @@ function Contentland() {
 
   return (
     <React.Fragment>
-      <h2 className=" text-center fw-semibold">
+      <h2 className=" text-center fw-semibold" id="boost-tagline">
         <img className="img-fluid" src={Logo} alt="Logo" />
         <span id="color1">Unlock</span> Your Potential, Boost Yourself!
       </h2>
@@ -30,7 +30,7 @@ function Contentland() {
         From Brainstorming to Focused Study
       </h4>
       <h6 className="text-center pb-4">Unlock Your Full Potential.</h6>
-      <div className="container">
+      <div className="container" id="button-row">
         <ul className="list-unstyled d-flex justify-content-center">
           <li className="btn p-3 m-1" id="abtus-btn">
             About Us
@@ -40,7 +40,7 @@ function Contentland() {
           </li>
         </ul>
       </div>
-      <div className="video-container d-flex justify-self-center">
+      <div className="video-container d-flex justify-self-center mt-5 pt-5">
         <video
           id="custom-video"
           className="video-player"
@@ -66,9 +66,13 @@ function Contentland() {
 
       <div className="container">
         <div className="row">
-          <h2 className="fw-semibold">Benefits</h2>
           <div className="col-sm">
-            <li className="btn d-flex justify-content-end">View All</li>
+            <h2 className="fw-semibold">Benefits</h2>
+          </div>
+          <div className="col-sm text-end">
+            <li className="btn" id="viewall">
+              View All
+            </li>
           </div>
         </div>
         <div className="row">
@@ -118,13 +122,15 @@ function Contentland() {
             <span className="pb-5">Example</span>
           </div>
         </div>
-        <div className="row">
-          <div>
-            <div>
+        <div className="row mb-5 mt-5 pt-5">
+          <div className="row mb-2">
+            <div className="col-sm">
               <h2 className="fw-semibold">Our Services</h2>
             </div>
-            <div className="col-sm">
-              <li className="btn d-flex justify-content-end">View All</li>
+            <div className="col-sm text-end">
+              <li className="btn" id="viewall">
+                View All
+              </li>
             </div>
           </div>
 
@@ -138,7 +144,12 @@ function Contentland() {
         </div>
         <div className="row d-flex justify-content-center">
           <div className="col-md-5 m-1 card">
-            <img alt="place holder" src={Pomodoro} />
+            <img
+              alt="place holder"
+              src={Pomodoro}
+              className="rounded mt-3"
+              height={300}
+            />
             <h5 className="fw-semibold m-3">Pomodoro Timer</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
@@ -146,7 +157,7 @@ function Contentland() {
             </a>
           </div>
           <div className="col-md-5 m-1 card">
-            <img src={Todo} />
+            <img src={Todo} className="rounded mt-3" height={300} />
             <h5 className="fw-semibold m-3">To-Do List</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
@@ -156,7 +167,12 @@ function Contentland() {
         </div>
         <div className="row d-flex justify-content-center">
           <div className="col-md-5 m-1 card">
-            <img alt="place holder" src={Brainstorming} />
+            <img
+              alt="place holder"
+              src={Brainstorming}
+              className="rounded mt-3"
+              height={300}
+            />
             <h5 className="fw-semibold m-3">Brainstorming</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
@@ -164,7 +180,7 @@ function Contentland() {
             </a>
           </div>
           <div className="col-md-5 m-1 card">
-            <img src={Tracker} />
+            <img src={Tracker} className="rounded mt-3" height={300} />
             <h5 className="fw-semibold m-3">Tracker</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
@@ -174,7 +190,7 @@ function Contentland() {
         </div>
         <div className="row d-flex justify-content-center">
           <div className="col-md-5 m-1 card">
-            <img src={Reward} />
+            <img src={Reward} className="rounded mt-3" height={300} />
             <h5 className="fw-semibold m-3">EXP and Achievement</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">
@@ -182,7 +198,7 @@ function Contentland() {
             </a>
           </div>
           <div className="col-md-5 m-1 card">
-            <img src={Focus} />
+            <img src={Focus} className="rounded mt-3" height={300} />
             <h5 className="fw-semibold m-3">Focus Mode</h5>
             <span>Example</span>
             <a className="btn m-2 mb-4" id="serv-btns">

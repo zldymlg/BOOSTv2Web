@@ -1,18 +1,70 @@
-import React, { useState } from "react";
-import Header from "./Components/Header.tsx";
-import LandingNav from "./Components/LandingPageNavigation.tsx";
-import Footer from "./Components/Footer.tsx";
+import React, { useState, ChangeEvent } from "react";
+import {
+  auth,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  googleProvider,
+} from "./firebaseConfig";
+import Header from "./Components/Header";
+import LandingNav from "./Components/LandingPageNavigation";
+import Footer from "./Components/Footer";
+import TermsPolicy from "./Components/TermsPolicy";
 import "bootstrap/dist/css/bootstrap.css";
 import "/src/Signup.css";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 
-function Signup() {
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [termsChecked, setTermsChecked] = useState(false);
+interface UserInfo {
+  name: string;
+  email: string;
+  password: string;
+}
+
+const Signup: React.FC = () => {
+  const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+  const [termsChecked, setTermsChecked] = useState<boolean>(false);
+  const [showTerms, setShowTerms] = useState<boolean>(false);
+  const [userInfo, setUserInfo] = useState<UserInfo>({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState<string>("");
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
+  };
+
+  const handleSignup = async () => {
+    if (!userInfo.email || !userInfo.password) {
+      setError("Email and password are required.");
+      return;
+    }
+    try {
+      await createUserWithEmailAndPassword(
+        auth,
+        userInfo.email,
+        userInfo.password
+      );
+      alert("Signup successful! Redirecting to dashboard...");
+      window.location.href = "dashboard.html";
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+      alert("Google sign-up successful! Redirecting to dashboard...");
+      window.location.href = "dashboard.html";
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
 
   return (
-    <React.Fragment>
+    <>
       <Header />
       <LandingNav />
       <motion.div
@@ -45,101 +97,70 @@ function Signup() {
           >
             Create an account to unlock exclusive features
           </motion.span>
-          <span className="pt-2 pb-2" style={{ fontWeight: 500 }}>
+          {error && <p className="text-danger text-center">{error}</p>}
+
+          <label className="pt-2 pb-2" style={{ fontWeight: 500 }}>
             Full Name
-          </span>
+          </label>
           <motion.input
             className="rounded p-2 border-0"
-            name="Name"
+            name="name"
             placeholder="Enter your Name"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            value={userInfo.name}
+            onChange={handleChange}
           />
-          <span className="pt-2 pb-2" style={{ fontWeight: 500 }}>
+
+          <label className="pt-2 pb-2" style={{ fontWeight: 500 }}>
             Email
-          </span>
+          </label>
           <motion.input
             className="rounded p-2 border-0"
-            name="Email"
+            name="email"
             placeholder="Enter your Email"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
+            value={userInfo.email}
+            onChange={handleChange}
           />
-          <span className="pt-2 pb-2" style={{ fontWeight: 500 }}>
+
+          <label className="pt-2 pb-2" style={{ fontWeight: 500 }}>
             Password
-          </span>
-          <motion.div
-            className="position-relative"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-          >
+          </label>
+          <motion.div className="position-relative">
             <input
               className="rounded p-2 border-0 w-100"
-              name="Password"
-              id="Password"
+              name="password"
               type={passwordVisible ? "text" : "password"}
               placeholder="Enter your Password"
-              style={{ paddingRight: "3rem" }}
+              value={userInfo.password}
+              onChange={handleChange}
             />
-            <motion.div
-              className="position-absolute d-flex align-items-center justify-content-center"
-              style={{
-                top: "20%",
-                right: "10px",
-                transform: "translateY(-50%)",
-                cursor: "pointer",
-                color: "gray",
-              }}
+            <motion.button
+              type="button"
+              className="position-absolute end-0 me-3 mt-1 bg-transparent border-0"
               onClick={() => setPasswordVisible(!passwordVisible)}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
               whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ duration: 0.2 }}
             >
-              {passwordVisible ? (
-                <motion.div
-                  key="eyeOff"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <EyeOff size={20} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="eye"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Eye size={20} />
-                </motion.div>
-              )}
-            </motion.div>
+              {passwordVisible ? <EyeOff /> : <Eye />}
+            </motion.button>
           </motion.div>
-          <motion.label
-            className="p-2"
-            style={{ color: "white" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 1 }}
-          >
+
+          <motion.label className="p-2" style={{ color: "white" }}>
             <input
               type="checkbox"
               checked={termsChecked}
               onChange={(e) => setTermsChecked(e.target.checked)}
             />
-            I agree with
-            <a className="p-1">Terms of Use</a>
-            and
-            <a className="p-1">Privacy Policy</a>
+            I agree with{" "}
+            <a className="p-1" onClick={() => setShowTerms(true)}>
+              Terms of Use
+            </a>{" "}
+            and{" "}
+            <a className="p-1" onClick={() => setShowTerms(true)}>
+              Privacy Policy
+            </a>
           </motion.label>
+
           <motion.button
             id="login-btn"
             className="rounded p-2 mt-2 border-0"
@@ -148,12 +169,12 @@ function Signup() {
               cursor: termsChecked ? "pointer" : "not-allowed",
               opacity: termsChecked ? 1 : 0.6,
             }}
-            whileHover={termsChecked ? { scale: 1.05 } : {}}
-            whileTap={termsChecked ? { scale: 0.95 } : {}}
-            transition={{ duration: 0.2 }}
+            onClick={handleSignup}
           >
             Sign Up
           </motion.button>
+
+          {/* OR Separator */}
           <div className="line-container mt-3 mb-3" id="-or-line">
             <motion.div
               className="line"
@@ -173,29 +194,24 @@ function Signup() {
               transition={{ duration: 0.6 }}
             ></motion.div>
           </div>
+
           <motion.button
             className="rounded p-2 border-0"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.2 }}
+            onClick={handleGoogleSignup}
           >
-            Google
+            Sign Up with Google
           </motion.button>
-          <motion.div
-            className="text-center mt-4"
-            style={{ color: "#305029" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 1.2 }}
-          >
+
+          <motion.div className="text-center mt-4" style={{ color: "#305029" }}>
             Already have an account? <a className="p-0">Login</a>
             <img className="ps-1" src="/src/assets/Arrow_btn.svg" />
           </motion.div>
         </motion.div>
       </motion.div>
+      {showTerms && <TermsPolicy onClose={() => setShowTerms(false)} />}
       <Footer />
-    </React.Fragment>
+    </>
   );
-}
+};
 
 export default Signup;

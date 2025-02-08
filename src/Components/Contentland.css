@@ -62,3 +62,13 @@ spans,h1,h2,h4,h5,h6 {
     align-items: center;
     cursor: pointer;
   }
+  #boost-tagline{
+    padding-top: 10%;
+  }
+  #button-row{
+    padding-bottom: 10%;
+  }
+#viewall{
+    background-color: #64703E;
+    color: white;
+}

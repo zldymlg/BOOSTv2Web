@@ -4,11 +4,36 @@ import LandingNav from "./Components/LandingPageNavigation.tsx";
 import Footer from "./Components/Footer.tsx";
 import "bootstrap/dist/css/bootstrap.css";
 import "/src/Login.css";
-import { Eye, EyeOff } from "lucide-react"; // Assuming you're using lucide-react for icons
-import { motion } from "framer-motion"; // For smooth animations
+import { Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
+import { auth, googleProvider } from "./firebaseConfig"; // Adjust the path if needed
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 
 function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      alert("Login Successful!");
+      window.location.href = "dashboard.html"; // Redirect to the dashboard
+    } catch (error) {
+      setError("User not found");
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+      alert("Google Sign-in Successful!");
+      window.location.href = "dashboard.html"; // Redirect to the dashboard after Google login
+    } catch (error) {
+      setError("User not found");
+    }
+  };
 
   return (
     <React.Fragment>
@@ -44,6 +69,9 @@ function Login() {
           >
             Welcome Back! Please Log in to access your account.
           </motion.span>
+
+          {error && <motion.p className="text-danger">{error}</motion.p>}
+
           <span className="pt-2 pb-2" style={{ fontWeight: 500 }}>
             Email
           </span>
@@ -51,10 +79,13 @@ function Login() {
             className="rounded p-2 border-0"
             name="Email"
             placeholder="Enter your Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           />
+
           <span className="pt-2 pb-2" style={{ fontWeight: 500 }}>
             Password
           </span>
@@ -69,6 +100,8 @@ function Login() {
               name="Password"
               type={passwordVisible ? "text" : "password"}
               placeholder="Enter your Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
             <motion.button
               type="button"
@@ -81,6 +114,7 @@ function Login() {
               {passwordVisible ? <EyeOff /> : <Eye />}
             </motion.button>
           </motion.div>
+
           <a className="text-end p-0">Forget Password?</a>
           <motion.label
             initial={{ opacity: 0 }}
@@ -90,15 +124,18 @@ function Login() {
             <input type="checkbox" />
             Remember me
           </motion.label>
+
           <motion.button
             id="login-btn"
             className="rounded p-2 mt-2 border-0"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             transition={{ duration: 0.2 }}
+            onClick={handleLogin}
           >
             Log In
           </motion.button>
+
           <div className="line-container mt-3 mb-3" id="-or-line">
             <motion.div
               className="line"
@@ -118,14 +155,17 @@ function Login() {
               transition={{ duration: 0.6 }}
             ></motion.div>
           </div>
+
           <motion.button
             className="rounded p-2 border-0"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             transition={{ duration: 0.2 }}
+            onClick={handleGoogleSignIn}
           >
             Google
           </motion.button>
+
           <motion.div
             className="text-center mt-4"
             initial={{ opacity: 0 }}
@@ -141,4 +181,5 @@ function Login() {
     </React.Fragment>
   );
 }
+
 export default Login;

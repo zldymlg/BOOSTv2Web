@@ -30,6 +30,7 @@ function LandingNav() {
           </ul>
         </div>
       </nav>
+      <hr className="mt-0 mb-0 ms-4 me-4" style={{ color: "wheat" }} />
     </React.Fragment>
   );
 }
