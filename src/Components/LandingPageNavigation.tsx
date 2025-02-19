@@ -1,5 +1,5 @@
 import React from "react";
-import vectorImage from "/src/assets/BOOSTWORD.png";
+import vectorImage from "/src/assets/Logo.png";
 import "./LandingPageNavigation.css";
 
 function LandingNav() {

@@ -1,74 +1,77 @@
-    
-#color1{
-    color: #FFCE1B;
-    padding-left: 1%;
-    
-}
-#text1{
-    color: #FFCE1B;
-}
-#abtus-btn{
-    background-color: #64703E;
-    color: white;
-}
-#serv-btn{
-    color: #FFCE1B;
-    fill: none;
-    border: 1px solid #F1F1F3;
-}
+    #color1 {
+      color: #FFCE1B;
+      padding-left: 1%;
 
-spans,h1,h2,h4,h5,h6 {
-    font-family: "Be Vietnam Pro", serif;
-    font-style: normal;
-}
-#arr-btn{
-    align-self: flex-end;
-    /* height: ; */
-    
-}
-#serv-btns{
-    background-color: #64703E;
-    color: white;
-    
-}
+    }
 
-.video-container {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-  }
-  
-  .video-player {
-    position: absolute;
-    top: 0;
-    left: 12%;
-    width: 75%;
-    height: 100%;
-  }
-  
-  .play-button {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.6);
-    border: none;
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-  }
-  #boost-tagline{
-    padding-top: 10%;
-  }
-  #button-row{
-    padding-bottom: 10%;
-  }
-#viewall{
-    background-color: #64703E;
-    color: white;
-}
+    #Logostart {
+      width: 50px;
+    }
+
+    #text1 {
+      color: #FFCE1B;
+    }
+
+    #abtus-btn {
+      background-color: #64703E;
+      color: white;
+    }
+
+    #serv-btn {
+      color: #FFCE1B;
+      fill: none;
+      border: 1px solid #F1F1F3;
+    }
+
+    spans,
+    h1,
+    h2,
+    h4,
+    h5,
+    h6 {
+      font-family: "Be Vietnam Pro", serif;
+      font-style: normal;
+    }
+
+    #arr-btn {
+      align-self: flex-end;
+      /* height: ; */
+
+    }
+
+    #serv-btns {
+      background-color: #64703E;
+      color: white;
+
+    }
+
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+    }
+
+    .video-player {
+      position: absolute;
+      top: 0;
+      left: 12%;
+      width: 75%;
+      height: 100%;
+    }
+
+    .play-button {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.6);
+      border: none;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }

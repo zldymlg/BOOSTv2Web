@@ -1,18 +1,15 @@
-
 .dashboard-container {
     display: flex;
     height: 100vh;
-    overflow-y: hidden;
 }
 
-/* Calendar */
 .custom-calendar {
     border: none !important;
     background: transparent;
     box-shadow: none;
 }
 
-/* Sidebar */
+
 .dashboard-sidebar {
     position: fixed;
     top: 0;
@@ -34,28 +31,22 @@
 
 .dashboard-sidebar.show {
     right: 0;
+    overflow-x: hidden;
 }
 
-/* Sidebar Toggle Button */
 .sidebar-toggle {
     position: fixed;
-    top: 15px;
-    right: 15px;
-    background: #6c743a;
-    color: white;
+    bottom: 0px;
+    height: 5%;
+    right: 0px;
+    color: #5a632d;
     border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    background: rgb(201, 201, 200, 0.5);
     cursor: pointer;
     z-index: 20;
     transition: background 0.3s ease;
 }
 
-.sidebar-toggle:hover {
-    background: #5a632d;
-}
-
-/* User Section */
 .user-section {
     display: flex;
     align-items: center;
@@ -67,7 +58,6 @@
     color: gray;
 }
 
-/* Divider */
 .divider {
     border: 0;
     height: 1px;
@@ -75,7 +65,6 @@
     margin: 10px 0;
 }
 
-/* Icons */
 .icon-section {
     display: flex;
     justify-content: flex-end;
@@ -94,7 +83,6 @@
     transform: scale(1.1);
 }
 
-/* Notifications */
 .notifications-panel {
     position: absolute;
     top: 50px;
@@ -165,7 +153,6 @@
     font-size: 18px;
 }
 
-/* Tasks */
 .task-section {
     margin-top: 10px;
 }
@@ -187,7 +174,6 @@
     color: #aaa;
 }
 
-/* Button */
 .schedule-btn {
     width: 100%;
     background: #6c743a;
@@ -204,8 +190,7 @@
     transform: translateY(-2px);
 }
 
-/* Responsive */
-@media (max-width: 767px) {
+@media (max-width: 100%) {
     .dashboard-sidebar {
         right: -320px;
     }
@@ -216,7 +201,7 @@
     }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 100%) {
     .dashboard-sidebar {
         right: 0;
     }

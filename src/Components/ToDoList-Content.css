@@ -1,0 +1,139 @@
+.dot1 {
+  color: #5030E5;
+}
+
+.dot2 {
+  color: #FFCE1B;
+}
+
+.dot3 {
+  color: #65713F;
+}
+
+
+/* Colors for task states */
+.ongoing {
+  color: #5030E5;
+  /* Blue */
+}
+
+.pending {
+  color: #FFCE1B;
+  /* Yellow */
+}
+
+.completed {
+  color: #65713F;
+  /* Green */
+}
+
+/* Other existing styles for task-card remain the same */
+.task-card {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Board container to organize task columns */
+.board-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Each column should be styled with a border and spacing */
+.task-column {
+  flex: 1;
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Add a title with different colors */
+.task-column h3 {
+  color: #4a90e2;
+  /* Default blue color */
+  font-size: 1.2em;
+  margin-bottom: 20px;
+}
+
+.text-yellow-500 {
+  color: #f7b731;
+  /* Yellow color */
+}
+
+.text-green-500 {
+  color: #6dbf4e;
+  /* Green color */
+}
+
+/* Task card styles with spacing */
+.task-card {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.task-card h4 {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.task-card p {
+  margin: 5px 0;
+  font-size: 0.95em;
+}
+
+.time-left {
+  font-size: 0.85em;
+  color: #888;
+}
+
+/* Button styling for "Add Task" */
+.add-task {
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-task:hover {
+  background-color: #357ab7;
+}
+
+/* For task completion indication */
+.done {
+  color: green;
+  font-weight: bold;
+}
+
+/* Progress bar styling */
+progress {
+  width: 100%;
+  height: 15px;
+  margin-top: 5px;
+}
+
+#lvlprogress {
+  font-size: 1.1em;
+  margin-bottom: 20px;
+}
+
+.w-70 {
+  width: 70%;
+}

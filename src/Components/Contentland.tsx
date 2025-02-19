@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Contentland.css";
-import Logo from "/src/assets/Logo.svg";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Logo from "/src/assets/LOGO.png";
 import Video from "/src/assets/TeamworkLandingPage.mp4";
 import Pomodoro from "/src/assets/Pomodoro.png";
 import Todo from "/src/assets/Todolist.jpeg";
@@ -23,7 +24,7 @@ function Contentland() {
   return (
     <React.Fragment>
       <h2 className=" text-center fw-semibold" id="boost-tagline">
-        <img className="img-fluid" src={Logo} alt="Logo" />
+        <img className="img-fluid" src={Logo} alt="Logo" id="Logostart" />
         <span id="color1">Unlock</span> Your Potential, Boost Yourself!
       </h2>
       <h4 id="text1" className="text-center pb-1 medium-weight">
@@ -101,25 +102,38 @@ function Contentland() {
           </div>
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">03</h1>
-            <h5>Example</h5>
-            <span className="pb-5">Example</span>
+            <h5>Less Stress</h5>
+            <span className="pb-5">
+              When you ave better organization and task management. It help you
+              feel less overwhelmed and lowers stress level.
+            </span>
           </div>
         </div>
         <div className="row pt-2">
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">04</h1>
-            <h5>Example</h5>
-            <span className="pb-5">Example</span>
+            <h5>Quality of your work</h5>
+            <span className="pb-5">
+              Productivity tools often include feature like automated reminders
+              and version control to help you minizie errors and maintain
+              quality of work.
+            </span>
           </div>
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">05</h1>
-            <h5>Example</h5>
-            <span className="pb-5">Example</span>
+            <h5>Growth Opportunities</h5>
+            <span className="pb-5">
+              Many individuals are motivated by career growth and professional
+              development opportunities.
+            </span>
           </div>
           <div className="col-sm m-3 card">
             <h1 className="fw-bold text-end p-4">06</h1>
-            <h5>Example</h5>
-            <span className="pb-5">Example</span>
+            <h5>Reduce Burnout</h5>
+            <span className="pb-5">
+              Spending the right amount of time on daily processes makes you
+              cope better with your worklaod, allowing you to complete tasks.
+            </span>
           </div>
         </div>
         <div className="row mb-5 mt-5 pt-5">
@@ -151,7 +165,10 @@ function Contentland() {
               height={300}
             />
             <h5 className="fw-semibold m-3">Pomodoro Timer</h5>
-            <span>Example</span>
+            <span>
+              A time management method based on 25-minute stretches of focused
+              work broken by five-minute brakes.
+            </span>
             <a className="btn m-2 mb-4" id="serv-btns">
               Know more!
             </a>
@@ -159,7 +176,12 @@ function Contentland() {
           <div className="col-md-5 m-1 card">
             <img src={Todo} className="rounded mt-3" height={300} />
             <h5 className="fw-semibold m-3">To-Do List</h5>
-            <span>Example</span>
+            <span>
+              A list of things you have to-do. That means basically anything and
+              everything can be on your to-do list-but just because you've
+              written your to-dos down doesn't mean your to-do list actually
+              usefull.
+            </span>
             <a className="btn m-2 mb-4" id="serv-btns">
               Know more!
             </a>
@@ -174,7 +196,10 @@ function Contentland() {
               height={300}
             />
             <h5 className="fw-semibold m-3">Brainstorming</h5>
-            <span>Example</span>
+            <span>
+              A group problem-solving method that involves the spontaneous
+              contribution of creative ideas and solutions.
+            </span>
             <a className="btn m-2 mb-4" id="serv-btns">
               Know more!
             </a>
@@ -182,7 +207,10 @@ function Contentland() {
           <div className="col-md-5 m-1 card">
             <img src={Tracker} className="rounded mt-3" height={300} />
             <h5 className="fw-semibold m-3">Tracker</h5>
-            <span>Example</span>
+            <span>
+              Porvides individuals and teams with tools to plan, prioritize, and
+              track their activities efficiently
+            </span>
             <a className="btn m-2 mb-4" id="serv-btns">
               Know more!
             </a>
@@ -192,7 +220,7 @@ function Contentland() {
           <div className="col-md-5 m-1 card">
             <img src={Reward} className="rounded mt-3" height={300} />
             <h5 className="fw-semibold m-3">EXP and Achievement</h5>
-            <span>Example</span>
+            <span>A rewad systems for completing tasks</span>
             <a className="btn m-2 mb-4" id="serv-btns">
               Know more!
             </a>
@@ -200,7 +228,7 @@ function Contentland() {
           <div className="col-md-5 m-1 card">
             <img src={Focus} className="rounded mt-3" height={300} />
             <h5 className="fw-semibold m-3">Focus Mode</h5>
-            <span>Example</span>
+            <span>A mode that turns off any distraction on your device</span>
             <a className="btn m-2 mb-4" id="serv-btns">
               Know more!
             </a>

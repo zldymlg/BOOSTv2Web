@@ -100,7 +100,7 @@ const Signup: React.FC = () => {
           {error && <p className="text-danger text-center">{error}</p>}
 
           <label className="pt-2 pb-2" style={{ fontWeight: 500 }}>
-            Full Name
+            Username
           </label>
           <motion.input
             className="rounded p-2 border-0"
