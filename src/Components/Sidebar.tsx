@@ -35,7 +35,11 @@ export default function Sidebar() {
     {
       name: "To-Do List",
       icon: <ListCheck size={20} />,
-      component: <ToDoList />,
+      component: (
+        <>
+          <ToDoList /> <Dashboardside />
+        </>
+      ),
     },
     {
       name: "Pomodoro Timer",
@@ -79,7 +83,7 @@ export default function Sidebar() {
           </button>
         </div>
         <hr className="m-3" />
-        {/* Menu Items */}
+
         <ul className="menu-list">
           {menuItems.map((item) => (
             <li

@@ -4,7 +4,10 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   googleProvider,
-} from "./firebaseConfig";
+  firestore,
+} from "./firebase";
+import { doc, setDoc } from "firebase/firestore";
+
 import Header from "./Components/Header";
 import LandingNav from "./Components/LandingPageNavigation";
 import Footer from "./Components/Footer";
@@ -18,46 +21,78 @@ interface UserInfo {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
+
+const handleGoogleSignIn = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    // Redirect after successful login
+    alert(
+      `Welcome, ${user.displayName || "User"}! Redirecting to dashboard...`
+    );
+    window.location.href = "/dashboard.html";
+  } catch (error) {
+    console.error("Google Sign-In Error:", error);
+    setError("Google Sign-In failed. Please try again.");
+  }
+};
 
 const Signup: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const [termsChecked, setTermsChecked] = useState<boolean>(false);
   const [showTerms, setShowTerms] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
+  // State for user input
   const [userInfo, setUserInfo] = useState<UserInfo>({
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
-  const [error, setError] = useState<string>("");
 
+  // Handle input change
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
   };
 
+  // Handle Sign Up
   const handleSignup = async () => {
-    if (!userInfo.email || !userInfo.password) {
-      setError("Email and password are required.");
+    if (
+      !userInfo.email ||
+      !userInfo.password ||
+      !userInfo.name ||
+      !userInfo.confirmPassword
+    ) {
+      setError("All fields are required.");
       return;
     }
+
+    // Check if passwords match
+    if (userInfo.password !== userInfo.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     try {
-      await createUserWithEmailAndPassword(
+      const userCredential = await createUserWithEmailAndPassword(
         auth,
         userInfo.email,
         userInfo.password
       );
-      alert("Signup successful! Redirecting to dashboard...");
-      window.location.href = "dashboard.html";
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
+      const user = userCredential.user;
 
-  const handleGoogleSignup = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-      alert("Google sign-up successful! Redirecting to dashboard...");
-      window.location.href = "dashboard.html";
+      await setDoc(doc(firestore, "users", user.uid), {
+        name: userInfo.name,
+        email: userInfo.email,
+        createdAt: new Date(),
+      });
+
+      alert("Signup successful! Redirecting to dashboard...");
+      window.location.href = "/dashboard.html";
     } catch (err: any) {
       setError(err.message);
     }
@@ -68,7 +103,7 @@ const Signup: React.FC = () => {
       <Header />
       <LandingNav />
       <motion.div
-        className="d-flex justify-content-center"
+        className="d-flex justify-content-center h-100"
         id="bg"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -97,6 +132,7 @@ const Signup: React.FC = () => {
           >
             Create an account to unlock exclusive features
           </motion.span>
+
           {error && <p className="text-danger text-center">{error}</p>}
 
           <label className="pt-2 pb-2" style={{ fontWeight: 500 }}>
@@ -105,7 +141,7 @@ const Signup: React.FC = () => {
           <motion.input
             className="rounded p-2 border-0"
             name="name"
-            placeholder="Enter your Name"
+            placeholder="Enter your Username"
             value={userInfo.name}
             onChange={handleChange}
           />
@@ -137,9 +173,27 @@ const Signup: React.FC = () => {
               type="button"
               className="position-absolute end-0 me-3 mt-1 bg-transparent border-0"
               onClick={() => setPasswordVisible(!passwordVisible)}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ duration: 0.2 }}
+            >
+              {passwordVisible ? <EyeOff /> : <Eye />}
+            </motion.button>
+          </motion.div>
+
+          <label className="pt-2 pb-2" style={{ fontWeight: 500 }}>
+            Confirm Password
+          </label>
+          <motion.div className="position-relative">
+            <input
+              className="rounded p-2 border-0 w-100"
+              name="confirmPassword"
+              type={passwordVisible ? "text" : "password"}
+              placeholder="Confirm your Password"
+              value={userInfo.confirmPassword}
+              onChange={handleChange}
+            />
+            <motion.button
+              type="button"
+              className="position-absolute end-0 me-3 mt-1 bg-transparent border-0"
+              onClick={() => setPasswordVisible(!passwordVisible)}
             >
               {passwordVisible ? <EyeOff /> : <Eye />}
             </motion.button>
@@ -160,7 +214,6 @@ const Signup: React.FC = () => {
               Privacy Policy
             </a>
           </motion.label>
-
           <motion.button
             id="login-btn"
             className="rounded p-2 mt-2 border-0"
@@ -174,21 +227,35 @@ const Signup: React.FC = () => {
             Sign Up
           </motion.button>
 
-          {/* OR Separator */}
-          <div className="line-container mt-3 mb-3" id="-or-line">
+          <div className="line-container mt-3 mb-3">
             <motion.div
               className="line"
-              id="-line-"
               initial={{ width: 0 }}
               animate={{ width: "100%" }}
               transition={{ duration: 0.6 }}
             ></motion.div>
-            <span className="text" id="-or-">
-              OR
-            </span>
+            <div className="line-container mt-3 mb-3" id="-or-line">
+              <motion.div
+                className="line"
+                id="-line-"
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 0.6 }}
+              ></motion.div>
+              <span className="text" id="-or-">
+                OR
+              </span>
+              <motion.div
+                className="line"
+                id="-line-"
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 0.6 }}
+              ></motion.div>
+            </div>
+
             <motion.div
               className="line"
-              id="-line-"
               initial={{ width: 0 }}
               animate={{ width: "100%" }}
               transition={{ duration: 0.6 }}
@@ -197,17 +264,17 @@ const Signup: React.FC = () => {
 
           <motion.button
             className="rounded p-2 border-0"
-            onClick={handleGoogleSignup}
+            onClick={handleGoogleSignIn}
           >
             Sign Up with Google
           </motion.button>
 
-          <motion.div className="text-center mt-4" style={{ color: "#305029" }}>
-            Already have an account? <a className="p-0">Login</a>
-            <img className="ps-1" src="/src/assets/Arrow_btn.svg" />
+          <motion.div className="text-center mt-4 mb-3">
+            Already have an account? <a href="/login">Login</a>
           </motion.div>
         </motion.div>
       </motion.div>
+
       {showTerms && <TermsPolicy onClose={() => setShowTerms(false)} />}
       <Footer />
     </>
@@ -215,3 +282,6 @@ const Signup: React.FC = () => {
 };
 
 export default Signup;
+function setError(arg0: string) {
+  throw new Error("Function not implemented.");
+}

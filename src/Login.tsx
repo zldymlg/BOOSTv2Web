@@ -6,8 +6,9 @@ import "bootstrap/dist/css/bootstrap.css";
 import "/src/Login.css";
 import { Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
-import { auth, googleProvider } from "./firebaseConfig"; // Adjust the path if needed
+import { auth, googleProvider, firestore } from "./firebase"; // Ensure correct import
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -15,23 +16,62 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  // Function to fetch user data from Firestore
+  const fetchUserData = async (uid: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      alert("Login Successful!");
-      window.location.href = "dashboard.html"; // Redirect to the dashboard
+      const userDocRef = doc(firestore, "users", uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        console.log("User Data:", userDoc.data());
+        return userDoc.data();
+      } else {
+        setError("User data not found in Firestore.");
+        return null;
+      }
     } catch (error) {
-      setError("User not found");
+      setError("Error fetching user data.");
+      return null;
     }
   };
 
+  // Email & Password Login
+  const handleLogin = async () => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // Fetch user data from Firestore
+      const userData = await fetchUserData(user.uid);
+      if (userData) {
+        alert(`Login Successful! Welcome, ${userData.name || "User"}!`);
+        window.location.href = "dashboard.html"; // Redirect to the dashboard
+      }
+    } catch (error) {
+      setError("User not found or incorrect credentials.");
+    }
+  };
+
+  // Google Sign-In
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
-      alert("Google Sign-in Successful!");
-      window.location.href = "dashboard.html"; // Redirect to the dashboard after Google login
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Fetch user data from Firestore
+      const userData = await fetchUserData(user.uid);
+      if (userData) {
+        alert(
+          `Google Sign-in Successful! Welcome, ${userData.name || "User"}!`
+        );
+        window.location.href = "dashboard.html";
+      }
     } catch (error) {
-      setError("User not found");
+      setError("Google Sign-In failed. Please try again.");
     }
   };
 
@@ -121,8 +161,7 @@ function Login() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.7 }}
           >
-            <input type="checkbox" />
-            Remember me
+            <input type="checkbox" /> Remember me
           </motion.label>
 
           <motion.button

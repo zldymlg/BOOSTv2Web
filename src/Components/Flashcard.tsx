@@ -119,7 +119,7 @@ export default function Flashcard() {
       </div>
       {showAddDeckModal && (
         <div className="modal-backdrop-deck">
-          <div className="modal-content p-4">
+          <div className="modal-content p-4 rounded-5" id="card-bg">
             <h3>Create New Deck</h3>
             <p>A Deck is a set of flashcards.</p>
             <input
@@ -151,7 +151,7 @@ export default function Flashcard() {
       )}
       {showAddTopicModal && (
         <div className="modal-backdrop-topic">
-          <div className="modal-content p-4">
+          <div className="modal-content p-4 rounded-5" id="card-bg">
             <h3>Create New Topic</h3>
             <p>A Topic is a set of decks.</p>
             <input

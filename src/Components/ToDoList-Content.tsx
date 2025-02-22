@@ -1,4 +1,5 @@
 import React from "react";
+import { BsThreeDots } from "react-icons/bs";
 import "./ToDoList-Content.css";
 
 const tasks = {
@@ -47,9 +48,8 @@ export default function FcTodoList() {
         <hr className="m-5" />
         <h2 className="pt-5 ps-3">Board</h2>
         <div className="board-container flex gap-4">
-          {/* On Progress */}
           <div className="task-column">
-            <h3 className="text-blue-500">On Progress</h3>
+            <h3 className="text-blue-500 text">On Progress</h3>
             {tasks.onProgress.map((task, index) => (
               <div key={index} className="task-card">
                 <h4>{task.title}</h4>
@@ -62,9 +62,8 @@ export default function FcTodoList() {
             <button className="add-task">+ Add Task</button>
           </div>
 
-          {/* Pending */}
           <div className="task-column">
-            <h3 className="text-yellow-500">Pending</h3>
+            <h3 className="text-yellow-500 text">Pending</h3>
             {tasks.pending.map((task, index) => (
               <div key={index} className="task-card">
                 <h4>{task.title}</h4>
@@ -75,9 +74,21 @@ export default function FcTodoList() {
             <button className="add-task">+ Add Task</button>
           </div>
 
-          {/* Completed */}
           <div className="task-column">
-            <h3 className="text-green-500">Completed</h3>
+            <div className="row">
+              <span className="icons col-sm-auto">
+                <svg height={13} width={10}>
+                  <circle fill="green" cx={5} cy={5} r={5} />
+                </svg>
+              </span>
+              <span className="ps-2 fw-medium text col-sm-auto">Completed</span>
+              <li className="btn col-sm-auto" id="dot-btn">
+                <BsThreeDots />
+              </li>
+            </div>
+            <svg height="2%" width="100%" className="mb-4 mt-2">
+              <line x1="0" y1="10" x2="100%" y2="10" id="custom-line3" />
+            </svg>
             {tasks.completed.map((task, index) => (
               <div key={index} className="task-card completed">
                 <h4>{task.title}</h4>

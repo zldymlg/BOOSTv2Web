@@ -30,29 +30,30 @@ const PomodoroTimer: React.FC = () => {
   } | null>(null);
   const [mode, setMode] = useState<string>("pomodoro");
   const [showSettings, setShowSettings] = useState(false);
-  const [pomodoroDuration, setPomodoroDuration] = useState(25);
+  var [pomodoroDuration, setPomodoroDuration] = useState(25);
   const [shortBreakDuration, setShortBreakDuration] = useState(5);
   const [longBreakDuration, setLongBreakDuration] = useState(15);
   const [autoSwitch, setAutoSwitch] = useState(false);
 
-  const handleModeChange = (newMode, newTime) => {
+  const handleModeChange = (newMode: string , duration: number) => {
     setMode(newMode);
-    setTime(newTime);
+    setTime(duration * 60);
     setCurrentTask(null);
     setIsRunning(false);
   };
   useEffect(() => {
-    let timer;
+    let timer: NodeJS.Timeout;
     if (isRunning) {
       timer = setInterval(() => {
         setTime((prevTime) => {
           if (prevTime === 0) {
+            clearInterval(timer)
             setIsRunning(false);
             setCompletedPomodoros((prev) => prev + 1);
             setTotalTimeSpent(
               (prev) =>
                 prev +
-                (mode === "longBreak" ? 10 : mode === "shortBreak" ? 5 : 25)
+                
             );
             setTasks((prevTasks) => prevTasks.filter((t) => t !== currentTask));
             setCurrentTask(null);
@@ -66,9 +67,9 @@ const PomodoroTimer: React.FC = () => {
     return () => clearInterval(timer);
   }, [isRunning, mode, currentTask]);
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+  var formatTime = (seconds) => {
+    var mins = Math.floor(seconds / 60);
+    var secs = seconds % 60;
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
