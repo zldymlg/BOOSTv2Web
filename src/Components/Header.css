@@ -2,11 +2,11 @@
     background-color: #33592A;
     width: 96vw;
     display: flex;
-   justify-self: center;
-   border: none;
-   border-radius: 7px;
-   margin-top: 1vh;
-    
+    justify-self: center;
+    border: none;
+    border-radius: 7px;
+    margin-top: 1vh;
+
 }
 
 #Tagline {
@@ -18,9 +18,13 @@
     text-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
     padding: 1vh;
 }
+
 a {
     padding: 1vw;
 }
 
-
-
+@media only screen and (max-width: 768px) {
+    .col-12 {
+        font-size: 90px;
+    }
+}

@@ -1,4 +1,4 @@
-.dashboard-container {
+/* .dashboard-container {
     display: flex;
     height: 100vh;
 }
@@ -19,7 +19,6 @@
     background: #fff;
     border-left: 1px solid #ddd;
     padding: 20px;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
     overflow-x: hidden;
     transition: right 0.3s ease-in-out;
@@ -209,4 +208,4 @@
     .sidebar-toggle {
         display: none;
     }
-}
+} */

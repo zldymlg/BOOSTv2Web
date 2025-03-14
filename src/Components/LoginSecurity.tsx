@@ -1,5 +1,6 @@
 import React from "react";
 import { useState } from "react";
+import { FaFacebookSquare } from "react-icons/fa";
 import "./LoginSecurity.css";
 
 export default function LogSec() {
@@ -36,7 +37,10 @@ export default function LogSec() {
         </div>
         <h3>Social Media Login</h3>
         <ul className="row gap-2">
-          <li className="w-50 btn">Facebook</li>
+          <li className="w-50 btn">
+            <FaFacebookSquare size="30" />
+            Facebook
+          </li>
           <li className="w-50 btn">Instagram</li>
           <li className="w-50 btn">Gmail</li>
         </ul>

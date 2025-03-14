@@ -1,0 +1,64 @@
+.goal {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 10px auto;
+  width: 350px;
+  padding: 10px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  position: relative;
+}
+
+.plus-btn {
+  background-color: white;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  margin-right: 10px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.specific {
+  background-color: blue;
+}
+
+.measurable {
+  background-color: red;
+}
+
+.achievable {
+  background-color: green;
+}
+
+.relevant {
+  background-color: orange;
+}
+
+.time-bound {
+  background-color: purple;
+}
+
+@media (max-width: 768px) {
+  .goal {
+    width: 90%;
+  }
+
+  .plus-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+  }
+}

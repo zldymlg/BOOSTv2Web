@@ -1,18 +1,3 @@
-#lvlprogress {
-    margin-top: 5%;
-    margin-left: 2%;
-    margin-right: 4%;
-}
-
-#xpbar {
-    width: 90%;
-}
-
-#space {
-    padding-top: 0%;
-    padding-left: 55%
-}
-
 .overflow-x-auto {
     display: flex;
     overflow-x: auto;

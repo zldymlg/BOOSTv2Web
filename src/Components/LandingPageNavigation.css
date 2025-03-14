@@ -92,7 +92,17 @@ nav {
 
 @media only screen and (max-width: 768px) {
   #Logo {
-    width: 13vh;
+    width: 11vh;
     height: auto;
   }
+
+  #Signup {
+    font-size: 11px;
+  }
+
+  #login {
+    font-size: 12px;
+  }
+
+
 }

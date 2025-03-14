@@ -1,22 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Sidebar.css";
 import { BsCardText } from "react-icons/bs";
-import {
-  ChevronsLeft,
-  ChevronsRight,
-  LayoutGrid,
-  ListCheck,
-  Timer,
-  Brain,
-  Settings,
-} from "lucide-react";
+import { FaUserCircle } from "react-icons/fa";
+import { LayoutGrid, ListCheck, Timer, Brain, Settings } from "lucide-react";
 import Brainstorming from "./Brainstorming.tsx";
 import Dashboard from "./dashboard-content.tsx";
-import Dashboardside from "./dashboard-sidebar.tsx";
 import PomodoroTimer from "./Pomodoro.tsx";
-import ToDoList from "./ToDoList-Content.tsx";
+import ToDoList from "./ToDoList.tsx";
 import FlashCards from "./Flashcard.tsx";
 import SettingsTabs from "./Settings.tsx";
+import Profile from "./Profile.tsx";
+import { FiMenu, FiChevronUp } from "react-icons/fi";
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth <= 768);
@@ -26,20 +20,12 @@ export default function Sidebar() {
     {
       name: "Dashboard",
       icon: <LayoutGrid size={20} />,
-      component: (
-        <>
-          <Dashboard /> <Dashboardside />
-        </>
-      ),
+      component: <Dashboard />,
     },
     {
       name: "To-Do List",
       icon: <ListCheck size={20} />,
-      component: (
-        <>
-          <ToDoList /> <Dashboardside />
-        </>
-      ),
+      component: <ToDoList />,
     },
     {
       name: "Pomodoro Timer",
@@ -63,27 +49,33 @@ export default function Sidebar() {
     },
   ];
 
+  useEffect(() => {
+    const handleResize = () => setIsCollapsed(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div className="app-container">
       <div className={`sidebar ${isCollapsed ? "collapsed" : "expanded"}`}>
-        {/* Logo and Collapse Button */}
-        <div className="logo-container mt-4 m-2 ">
+        <div className="logo-container m-2">
           {!isCollapsed && (
-            <img src="./src/assets/BOOSTWORD.png" id="logoword" />
+            <img
+              src="./src/assets/BOOSTWORD.png"
+              id="logoword"
+              className="me-4"
+              alt="Logo"
+            />
           )}
           <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={() => setIsCollapsed((prev) => !prev)}
             className="collapse-button"
+            aria-label="Toggle Sidebar"
           >
-            {isCollapsed ? (
-              <ChevronsRight size={20} />
-            ) : (
-              <ChevronsLeft size={20} />
-            )}
+            <FiMenu size={20} />
           </button>
         </div>
         <hr className="m-3" />
-
         <ul className="menu-list">
           {menuItems.map((item) => (
             <li
@@ -96,13 +88,38 @@ export default function Sidebar() {
             </li>
           ))}
         </ul>
+
+        {/* Profile Section */}
+        <div className="user-section" style={{ cursor: "pointer" }}>
+          <FaUserCircle
+            size={30}
+            className="ms-1"
+            onClick={() => setActiveTab("Profile")}
+          />
+          {!isCollapsed && (
+            <>
+              <span
+                className="user-name ms-1"
+                onClick={() => setActiveTab("Profile")}
+              >
+                Username
+              </span>
+              <FiChevronUp size={20} className="ms-3" />
+            </>
+          )}
+        </div>
       </div>
+
       <div
         className={`content ${
           isCollapsed ? "content-collapsed" : "content-expanded"
         }`}
       >
-        {menuItems.find((item) => item.name === activeTab)?.component}
+        {activeTab === "Profile" ? (
+          <Profile />
+        ) : (
+          menuItems.find((item) => item.name === activeTab)?.component
+        )}
       </div>
     </div>
   );

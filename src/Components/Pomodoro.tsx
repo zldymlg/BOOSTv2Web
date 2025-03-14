@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Button, Form, Card, Nav } from "react-bootstrap";
+import React, { useState, useEffect, useRef } from "react";
+import { Button, Form, Card, Nav, Modal } from "react-bootstrap";
 import {
   FaPlus,
   FaPlay,
@@ -9,89 +9,426 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import "./Pomodoro.css";
-import { color } from "framer-motion";
+import ExpBar from "./exp-notif-cal.tsx";
+import { firestore, auth } from "../firebase";
+import {
+  collection,
+  doc,
+  query,
+  where,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+
+interface Task {
+  id?: string;
+  text: string;
+  notes: string;
+  priority: string;
+  pomosEst: number;
+  completed: boolean;
+  pomodorosCompleted: number;
+  createdAt?: any;
+}
 
 const PomodoroTimer: React.FC = () => {
-  const [time, setTime] = useState<number>(1500);
-  const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [task, setTask] = useState<string>("");
-  const [notes, setNotes] = useState<string>("");
-  const [priority, setPriority] = useState<string>("Urgent");
-  const [tasks, setTasks] = useState<
-    { text: string; notes: string; priority: string }[]
-  >([]);
-  const [completedPomodoros, setCompletedPomodoros] = useState<number>(0);
-  const [totalTimeSpent, setTotalTimeSpent] = useState<number>(0);
-  const [showTaskInput, setShowTaskInput] = useState<boolean>(false);
-  const [currentTask, setCurrentTask] = useState<{
-    text: string;
-    notes: string;
-    priority: string;
-  } | null>(null);
-  const [mode, setMode] = useState<string>("pomodoro");
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const animationFrameRef = useRef<number | null>(null);
+  const [pomodoroDuration, setPomodoroDuration] = useState(25 * 60);
+  const [shortBreakDuration, setShortBreakDuration] = useState(5 * 60);
+  const [longBreakDuration, setLongBreakDuration] = useState(10 * 60);
+  const [autoSwitch, setAutoSwitch] = useState(true);
+  const [ringtone, setRingtone] = useState("ringtone1");
+  const ringtones = ["ringtone1", "ringtone2", "ringtone3"];
+  const [backgroundMusic, setBackgroundMusic] = useState("Time Ticking");
+  const backgroundMusics = ["Time Ticking", "Rainy", "Cozy"];
+  const [timeLeft, setTimeLeft] = useState(pomodoroDuration);
+  const [isRunning, setIsRunning] = useState(false);
+  const [mode, setMode] = useState("pomodoro");
+  const [showStartWarning, setShowStartWarning] = useState(false);
+  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  const [showTaskInput, setShowTaskInput] = useState(false);
+  const [task, setTask] = useState("");
+  const [notes, setNotes] = useState("");
+  const [priority, setPriority] = useState("Urgent");
+  const [selectedPomosEst, setSelectedPomosEst] = useState(1);
+  const [completedPomodoros, setCompletedPomodoros] = useState(0);
+  const [totalTimeSpent, setTotalTimeSpent] = useState(0);
+  const [tasksCompletedToday, setTasksCompletedToday] = useState(0);
+  const ringtonePlayerRef = useRef<HTMLAudioElement | null>(null);
+  const backgroundMusicPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  var [pomodoroDuration, setPomodoroDuration] = useState(25);
-  const [shortBreakDuration, setShortBreakDuration] = useState(5);
-  const [longBreakDuration, setLongBreakDuration] = useState(15);
-  const [autoSwitch, setAutoSwitch] = useState(false);
+  const timeLeftRef = useRef(timeLeft);
 
-  const handleModeChange = (newMode: string , duration: number) => {
-    setMode(newMode);
-    setTime(duration * 60);
-    setCurrentTask(null);
-    setIsRunning(false);
-  };
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    const unsubscribe = auth.onAuthStateChanged(async (userAuth) => {
+      if (userAuth) {
+        setUser(userAuth);
+        await loadTasks(userAuth.uid);
+      } else {
+        console.log("User not authenticated");
+        setTasks([]);
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const loadTasks = async (uid: string) => {
+    const tasksCollectionRef = collection(firestore, "users", uid, "tasks");
+    const q = query(tasksCollectionRef, where("completed", "==", false));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const newTasks: Task[] = [];
+      querySnapshot.forEach((doc) => {
+        newTasks.push({ id: doc.id, ...doc.data() } as Task);
+      });
+      setTasks(newTasks);
+    });
+    return () => unsubscribe();
+  };
+
+  const addTask = async () => {
+    if (task.trim() !== "") {
+      const newTask: Omit<Task, "id" | "createdAt"> = {
+        text: task,
+        notes,
+        priority,
+        pomosEst: selectedPomosEst,
+        completed: false,
+        pomodorosCompleted: 0,
+      };
+
+      // Optimistic update: Add task to the state immediately
+      setTasks([...tasks, { ...newTask, id: Date.now().toString() }]); // Generate a temporary ID
+
+      try {
+        const userDocRef = doc(firestore, "users", user.uid);
+        const tasksCollectionRef = collection(userDocRef, "tasks");
+        const docRef = await addDoc(tasksCollectionRef, {
+          ...newTask,
+          createdAt: serverTimestamp(),
+        });
+        // Update the task with the actual ID from Firestore
+        setTasks((prevTasks) =>
+          prevTasks.map((t) =>
+            t.id === Date.now().toString() ? { ...t, id: docRef.id } : t
+          )
+        );
+        setTask("");
+        setNotes("");
+        setPriority("Urgent");
+        setShowTaskInput(false);
+        setSelectedPomosEst(1);
+      } catch (error) {
+        console.error("Error adding task:", error);
+        // Rollback optimistic update if the write fails
+        setTasks((prevTasks) =>
+          prevTasks.filter((t) => t.id !== Date.now().toString())
+        );
+      }
+    }
+  };
+
+  const updateTaskCompletion = async (
+    tasks: Task[],
+    setTasks: React.Dispatch<React.SetStateAction<Task[]>>,
+    setTasksCompletedToday: React.Dispatch<React.SetStateAction<number>>,
+    currentTaskIndex: number,
+    userId: string
+  ) => {
+    if (!userId) {
+      console.error("User ID is missing");
+      return;
+    }
+
+    const updatedTasks = [...tasks];
+    const currentTask = updatedTasks[currentTaskIndex];
+
+    if (!currentTask || !currentTask.id) {
+      console.error("Task or Task ID is missing");
+      return;
+    }
+
+    currentTask.pomodorosCompleted++;
+
+    if (currentTask.pomodorosCompleted >= currentTask.pomosEst) {
+      currentTask.completed = true;
+    }
+
+    try {
+      const taskRef = doc(firestore, "users", userId, "tasks", currentTask.id);
+      await updateDoc(taskRef, {
+        pomodorosCompleted: currentTask.pomodorosCompleted,
+        completed: currentTask.completed,
+      });
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+
+    setTasks(updatedTasks);
+    setTasksCompletedToday((prev) => prev + 1);
+  };
+
+  const stopTimer = () => {
+    setIsRunning(false);
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+  };
+  const resetTimer = () => {
+    stopTimer();
+    setTimeLeft(25 * 60);
+  };
+
+  useEffect(() => {
+    const storedSettings = JSON.parse(
+      localStorage.getItem("pomodoroSettings") || "{}"
+    );
+    setPomodoroDuration(
+      Math.max(storedSettings.pomodoroDuration || 25 * 60, 300)
+    );
+    setShortBreakDuration(
+      Math.max(storedSettings.shortBreakDuration || 5 * 60, 120)
+    );
+    setLongBreakDuration(storedSettings.longBreakDuration || 10 * 60);
+    setAutoSwitch(storedSettings.autoSwitch || true);
+    setRingtone(storedSettings.ringtone || "ringtone1");
+    setBackgroundMusic(storedSettings.backgroundMusic || "background1");
+    setTimeLeft(pomodoroDuration);
+  }, []);
+
+  useEffect(() => {
     if (isRunning) {
-      timer = setInterval(() => {
-        setTime((prevTime) => {
-          if (prevTime === 0) {
-            clearInterval(timer)
+      intervalRef.current = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          if (prevTime <= 0) {
+            clearInterval(intervalRef.current!);
             setIsRunning(false);
-            setCompletedPomodoros((prev) => prev + 1);
-            setTotalTimeSpent(
-              (prev) =>
-                prev +
-                
-            );
-            setTasks((prevTasks) => prevTasks.filter((t) => t !== currentTask));
-            setCurrentTask(null);
-            return 1500;
+            handleSessionEnd();
+            playRingtone();
+            return getCurrentSessionDuration();
           }
           return prevTime - 1;
         });
       }, 1000);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    return () => clearInterval(intervalRef.current!);
+  }, [isRunning]);
+
+  useEffect(() => {
+    return () => stopBackgroundMusic();
+  }, [backgroundMusic]);
+
+  useEffect(() => {
+    if (isRunning) {
+      playBackgroundMusic();
+    } else {
+      stopBackgroundMusic();
+    }
+  }, [isRunning, backgroundMusic]);
+
+  const playBackgroundMusic = () => {
+    if (backgroundMusicPlayerRef.current) {
+      backgroundMusicPlayerRef.current.pause();
+      backgroundMusicPlayerRef.current.currentTime = 0;
+    }
+    const newBackgroundMusicPlayer = new Audio(
+      getBackgroundMusicURL(backgroundMusic)
+    );
+    newBackgroundMusicPlayer.loop = true;
+    newBackgroundMusicPlayer.play().catch((error) => {
+      console.error("Error playing background music:", error);
+    });
+    backgroundMusicPlayerRef.current = newBackgroundMusicPlayer;
+  };
+
+  const stopBackgroundMusic = () => {
+    if (backgroundMusicPlayerRef.current) {
+      backgroundMusicPlayerRef.current.pause();
+      backgroundMusicPlayerRef.current.currentTime = 0;
+      backgroundMusicPlayerRef.current = null;
+    }
+  };
+
+  const playRingtone = () => {
+    const newRingtonePlayer = new Audio(getRingtoneURL(ringtone));
+    newRingtonePlayer.play().catch((error) => {
+      console.error("Error playing ringtone:", error);
+    });
+    ringtonePlayerRef.current = newRingtonePlayer;
+  };
+
+  const getCurrentSessionDuration = () => {
+    switch (mode) {
+      case "pomodoro":
+        return pomodoroDuration;
+      case "shortBreak":
+        return shortBreakDuration;
+      case "longBreak":
+        return longBreakDuration;
+      default:
+        return pomodoroDuration;
+    }
+  };
+
+  const handleSessionEnd = () => {
+    setCompletedPomodoros((prev) => prev + 1);
+    setTotalTimeSpent((prev) => prev + getCurrentSessionDuration());
+
+    if (!user || !user.uid) {
+      console.error("User not authenticated");
+      return;
     }
 
-    return () => clearInterval(timer);
-  }, [isRunning, mode, currentTask]);
+    updateTaskCompletion(
+      tasks,
+      setTasks,
+      setTasksCompletedToday,
+      currentTaskIndex,
+      user.uid
+    );
 
-  var formatTime = (seconds) => {
-    var mins = Math.floor(seconds / 60);
-    var secs = seconds % 60;
+    if (autoSwitch && tasks.length > 0) {
+      const currentTask = tasks[currentTaskIndex];
+      if (
+        currentTask &&
+        currentTask.pomodorosCompleted < currentTask.pomosEst
+      ) {
+        setMode("pomodoro");
+        setTimeLeft(pomodoroDuration);
+      } else {
+        const nextTaskIndex = (currentTaskIndex + 1) % tasks.length;
+        setCurrentTaskIndex(nextTaskIndex);
+        const nextMode =
+          (nextTaskIndex + 1) % 4 === 0 ? "longBreak" : "shortBreak";
+        setMode(nextMode);
+        setTimeLeft(
+          nextMode === "longBreak" ? longBreakDuration : shortBreakDuration
+        );
+      }
+    } else {
+      setMode("pomodoro");
+      setTimeLeft(pomodoroDuration);
+      stopBackgroundMusic();
+      setIsRunning(false);
+    }
+  };
+
+  const getRingtoneURL = (ringtoneName: string): string => {
+    switch (ringtoneName) {
+      case "ringtone2":
+        return "/sounds/ringtone2.mp3";
+      case "ringtone3":
+        return "/sounds/ringtone3.mp3";
+      default:
+        return "/sounds/ringtone1.mp3";
+    }
+  };
+  const getBackgroundMusicURL = (musicName: string): string => {
+    switch (musicName) {
+      case "Rainy":
+        return "src/assets/Sound/Rainy.mp3";
+      case "Cozy":
+        return "src/assets/Sound/Cozy.mp3";
+      default:
+        return "src/assets/Sound/Clock.mp3";
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  const addTask = () => {
-    if (task.trim() !== "") {
-      const newTask = { text: task, notes, priority };
-      setTasks([...tasks, newTask]);
-      setTask("");
-      setNotes("");
-      setPriority("Urgent");
-      setShowTaskInput(false);
-      setCurrentTask(newTask);
-    }
+  const handlePomosEstChange = (e: any) => {
+    setSelectedPomosEst(parseInt(e.target.value, 10));
   };
 
   const sortedTasks = [...tasks].sort((a, b) => {
     const priorityOrder = { Urgent: 1, Important: 2, "Not Urgent": 3 };
-    return priorityOrder[a.priority] - priorityOrder[b.priority];
+    return (
+      priorityOrder[a.priority as keyof typeof priorityOrder] -
+      priorityOrder[b.priority as keyof typeof priorityOrder]
+    );
   });
+
+  const toggleTimer = () => {
+    if (tasks.length === 0) {
+      setShowStartWarning(true);
+      return;
+    }
+    setIsRunning(!isRunning);
+  };
+
+  const saveSettings = () => {
+    localStorage.setItem(
+      "pomodoroSettings",
+      JSON.stringify({
+        pomodoroDuration: Math.max(pomodoroDuration, 300),
+        shortBreakDuration: Math.max(shortBreakDuration, 120),
+        longBreakDuration,
+        autoSwitch,
+        ringtone,
+        backgroundMusic,
+      })
+    );
+    setShowSettings(false);
+    setTimeLeft(pomodoroDuration);
+    setMode("pomodoro");
+  };
+
+  const handleModeChange = (newMode: string) => {
+    setMode(newMode);
+    setIsRunning(false);
+    setTimeLeft(
+      newMode === "pomodoro"
+        ? pomodoroDuration
+        : newMode === "shortBreak"
+        ? shortBreakDuration
+        : longBreakDuration
+    );
+  };
+
+  const handleDurationChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<number>>
+  ) => {
+    const value = parseInt(e.target.value, 10); // Parse as integer
+
+    //Improved error handling:
+    if (isNaN(value)) {
+      console.error("Invalid input: Please enter a number.");
+      return;
+    }
+
+    const newValueInSeconds = value * 60;
+    const minValueInSeconds =
+      e.target.id === "pomodoroDuration"
+        ? 300
+        : e.target.id === "shortBreakDuration"
+        ? 120
+        : 300; //Minimums in seconds
+
+    setter(Math.max(newValueInSeconds, minValueInSeconds));
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <React.Fragment>
+      <ExpBar />
       <div className="d-flex justify-content-end">
         <Button
           onClick={() => setShowSettings(!showSettings)}
@@ -122,22 +459,31 @@ const PomodoroTimer: React.FC = () => {
             <Form.Label>Pomodoro Duration (minutes)</Form.Label>
             <Form.Control
               type="number"
-              value={pomodoroDuration}
-              onChange={(e) => setPomodoroDuration(Number(e.target.value))}
+              id="pomodoroDuration"
+              value={Math.floor(pomodoroDuration / 60)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleDurationChange(e, setPomodoroDuration)
+              }
             />
 
             <Form.Label>Short Break (minutes)</Form.Label>
             <Form.Control
               type="number"
-              value={shortBreakDuration}
-              onChange={(e) => setShortBreakDuration(Number(e.target.value))}
+              id="shortBreakDuration"
+              value={Math.floor(shortBreakDuration / 60)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleDurationChange(e, setShortBreakDuration)
+              }
             />
 
             <Form.Label>Long Break (minutes)</Form.Label>
             <Form.Control
               type="number"
-              value={longBreakDuration}
-              onChange={(e) => setLongBreakDuration(Number(e.target.value))}
+              id="longBreakDuration"
+              value={Math.floor(longBreakDuration / 60)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleDurationChange(e, setLongBreakDuration)
+              }
             />
 
             <Form.Check
@@ -146,10 +492,41 @@ const PomodoroTimer: React.FC = () => {
               checked={autoSwitch}
               onChange={() => setAutoSwitch(!autoSwitch)}
             />
+
+            <Form.Label>Ringtone</Form.Label>
+            <Form.Select
+              value={ringtone}
+              onChange={(e) => setRingtone(e.target.value)}
+            >
+              {ringtones.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </Form.Select>
+
+            <Form.Label>Background Music</Form.Label>
+            <Form.Select
+              value={backgroundMusic}
+              onChange={(e) => setBackgroundMusic(e.target.value)}
+            >
+              {backgroundMusics.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </Form.Select>
+
+            <Button className="mt-2" variant="light" onClick={saveSettings}>
+              <FaSave /> Save Settings
+            </Button>
           </Card>
         )}
       </div>
-      <div className="text-center p-4 ">
+      <div
+        className="text-center p-4"
+        style={{ backgroundColor: mode !== "pomodoro" ? "#FFFFE0" : "" }}
+      >
         <Card
           id="Card"
           className={`p-4 rounded mt-3 ${
@@ -162,7 +539,7 @@ const PomodoroTimer: React.FC = () => {
             <Nav.Item>
               <Nav.Link
                 className={mode === "pomodoro" ? "active" : ""}
-                onClick={() => handleModeChange("pomodoro", 1500)}
+                onClick={() => handleModeChange("pomodoro")}
               >
                 Pomodoro
               </Nav.Link>
@@ -170,7 +547,7 @@ const PomodoroTimer: React.FC = () => {
             <Nav.Item>
               <Nav.Link
                 className={mode === "longBreak" ? "active" : ""}
-                onClick={() => handleModeChange("longBreak", 600)}
+                onClick={() => handleModeChange("longBreak")}
               >
                 Long Break
               </Nav.Link>
@@ -178,13 +555,41 @@ const PomodoroTimer: React.FC = () => {
             <Nav.Item>
               <Nav.Link
                 className={mode === "shortBreak" ? "active" : ""}
-                onClick={() => handleModeChange("shortBreak", 300)}
+                onClick={() => handleModeChange("shortBreak")}
               >
                 Short Break
               </Nav.Link>
             </Nav.Item>
           </Nav>
-
+          <Modal
+            show={showStartWarning}
+            onHide={() => setShowStartWarning(false)}
+            centered
+            className="warning-modal"
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>
+                <span style={{ fontWeight: "bold", color: "#FF6347" }}>
+                  {" "}
+                  Warning!{" "}
+                </span>
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <p style={{ fontSize: "1.1rem" }}>
+                Please add a task before starting the timer.
+              </p>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="danger"
+                onClick={() => setShowStartWarning(false)}
+                style={{ border: "2px solid #FF6347", color: "#fff" }}
+              >
+                Close
+              </Button>
+            </Modal.Footer>
+          </Modal>
           <h1
             className="display-1"
             style={{
@@ -192,13 +597,15 @@ const PomodoroTimer: React.FC = () => {
               fontWeight: "900",
             }}
           >
-            {formatTime(time)}
+            {formatTime(timeLeft)}
           </h1>
-          {currentTask && <h5>Current Task: {currentTask.text}</h5>}
+          {currentTaskIndex < tasks.length && (
+            <h5>Current Task: {sortedTasks[currentTaskIndex].text}</h5>
+          )}
 
           <Button
             className="timer-btn rounded-circle"
-            onClick={() => setIsRunning(!isRunning)}
+            onClick={toggleTimer}
             variant="light"
             style={{
               width: "60px",
@@ -234,37 +641,60 @@ const PomodoroTimer: React.FC = () => {
         {showTaskInput && (
           <Card
             className="mt-3 bg-success text-white p-3 rounded"
-            style={{
-              backgroundColor: "",
-            }}
+            style={{ backgroundColor: "" }}
           >
             <h5>What are you working on?</h5>
             <Form>
-              <Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="taskTitle">Title</Form.Label>
                 <Form.Control
                   type="text"
+                  id="taskTitle"
                   value={task}
                   onChange={(e) => setTask(e.target.value)}
                   placeholder="Enter task"
                 />
               </Form.Group>
-              <Form.Group className="mt-2">
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="taskNotes">Notes</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={2}
+                  id="taskNotes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Additional notes"
                 />
               </Form.Group>
-              <Form.Group className="mt-2">
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="taskPriority">Priority</Form.Label>
                 <Form.Select
+                  id="taskPriority"
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
                 >
                   <option value="Urgent">Urgent</option>
                   <option value="Important">Important</option>
                   <option value="Not Urgent">Not Urgent</option>
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label htmlFor="taskPomosEst">Pomos Est.</Form.Label>
+                <Form.Select
+                  id="taskPomosEst"
+                  value={selectedPomosEst}
+                  onChange={handlePomosEstChange}
+                >
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                  <option value={3}>3</option>
+                  <option value={4}>4</option>
+                  <option value={5}>5</option>
+                  <option value={6}>6</option>
+                  <option value={7}>7</option>
+                  <option value={8}>8</option>
+                  <option value={9}>9</option>
+                  <option value={10}>10</option>
                 </Form.Select>
               </Form.Group>
               <Button className="mt-2" variant="light" onClick={addTask}>
@@ -276,7 +706,7 @@ const PomodoroTimer: React.FC = () => {
 
         {sortedTasks.map((t, index) => (
           <Card
-            key={index}
+            key={t.id} // Use the actual task ID as the key
             className="mt-3 p-3 rounded d-flex flex-row align-items-start bg-success shadow text-start"
             style={{ color: "white" }}
           >
@@ -297,6 +727,9 @@ const PomodoroTimer: React.FC = () => {
               <span className="badge bg-light text-dark me-2">
                 {t.priority}
               </span>
+              <span className="badge bg-light text-dark">
+                Pomos Est.: {t.pomosEst} / Completed: {t.pomodorosCompleted}
+              </span>
             </div>
           </Card>
         ))}
@@ -304,7 +737,8 @@ const PomodoroTimer: React.FC = () => {
         <Card className="mt-3 p-2 bg-success text-white rounded">
           <p className="mb-0">
             POMOS: <strong>{completedPomodoros}</strong> | Hours Taken:{" "}
-            <strong>{(totalTimeSpent / 60).toFixed(1)} hrs</strong>
+            <strong>{Math.floor(totalTimeSpent / 3600)} hrs</strong> | Tasks
+            Completed Today: {tasksCompletedToday}
           </p>
         </Card>
       </div>

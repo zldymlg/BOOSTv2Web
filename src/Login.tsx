@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import Header from "./Components/Header.tsx";
-import LandingNav from "./Components/LandingPageNavigation.tsx";
+//import Header from "./Components/Header.tsx";
+//import LandingNav from "./Components/LandingPageNavigation.tsx";
 import Footer from "./Components/Footer.tsx";
 import "bootstrap/dist/css/bootstrap.css";
 import "/src/Login.css";
 import { Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
-import { auth, googleProvider, firestore } from "./firebase"; // Ensure correct import
+import { auth, googleProvider, firestore } from "./firebase";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -16,7 +16,6 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // Function to fetch user data from Firestore
   const fetchUserData = async (uid: string) => {
     try {
       const userDocRef = doc(firestore, "users", uid);
@@ -35,7 +34,6 @@ function Login() {
     }
   };
 
-  // Email & Password Login
   const handleLogin = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(
@@ -77,8 +75,6 @@ function Login() {
 
   return (
     <React.Fragment>
-      <Header />
-      <LandingNav />
       <motion.div
         className="d-flex justify-content-center"
         id="bg"
@@ -204,16 +200,6 @@ function Login() {
           >
             Google
           </motion.button>
-
-          <motion.div
-            className="text-center mt-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
-          >
-            Don't have an account? <a className="p-0">Sign Up</a>
-            <img className="ps-1" src="/src/assets/Arrow_btn.svg" />
-          </motion.div>
         </motion.div>
       </motion.div>
       <Footer />

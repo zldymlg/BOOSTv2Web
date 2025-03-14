@@ -1,16 +1,14 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./dashboard-content.css";
+import ExpBar from "./exp-notif-cal.tsx";
 import { Calendar, Clock } from "lucide-react";
 
 export default function HomePage() {
   return (
     <React.Fragment>
       <div>
-        <div id="lvlprogress">
-          Level 0 <progress value="10" max="100" id="xpbar" /> 0/0xp
-        </div>
-        <hr className="m-5" />
+        <ExpBar />
         <h2 className="pt-5">Upcoming Work</h2>
         <div className="row flex-nowrap overflow-x-auto">
           <div className="col-sm-auto">

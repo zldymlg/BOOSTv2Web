@@ -2,6 +2,12 @@ import React, { useState } from "react";
 import "./Flashcard.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BsSearch } from "react-icons/bs";
+import ExpBar from "./exp-notif-cal.tsx";
+import FlashcardDetails from "./Flashcard-content.tsx";
+
+type ActiveComponentState =
+  | "flashcard"
+  | { name: "flashcardDetails"; deckTitle: string; deckDescription: string };
 
 export default function Flashcard() {
   const [showAddDeckModal, setShowAddDeckModal] = useState(false);
@@ -11,6 +17,8 @@ export default function Flashcard() {
 
   const [showAddTopicModal, setShowAddTopicModal] = useState(false);
   const [newTopicName, setNewTopicName] = useState("");
+  const [activeComponent, setActiveComponent] =
+    useState<ActiveComponentState>("flashcard");
 
   const [topics, setTopics] = useState<
     {
@@ -58,6 +66,7 @@ export default function Flashcard() {
     setShowAddTopicModal(false);
     setNewTopicName("");
   };
+
   const handleCreateTopic = () => {
     if (newTopicName.trim() === "") return;
     const newTopic = {
@@ -71,52 +80,85 @@ export default function Flashcard() {
 
   return (
     <React.Fragment>
-      <div id="lvlprogress">
-        Level 0 <progress value="10" max="100" id="xpbar" /> 0/0xp
-      </div>
-      <hr className="m-5" />
-      <div className="row w-50 ps-5">
-        <button className="btn col-sm-auto border rounded-5 me-2" id="search">
-          <BsSearch />
-        </button>
-        <input
-          className="col-sm-10 rounded-5 border"
-          id="searchinput"
-          placeholder="Search..."
-        />
-      </div>
-      {topics.map((topic) => (
-        <div key={topic.id} className="mt-4">
-          <h3 className="ms-5">{topic.title}</h3>
-          <div className="row flex-nowrap overflow-x-auto">
-            {topic.decks.map((deck, index) => (
-              <div key={index} className="col-sm-3 ms-5 card rounded-5">
-                <h5 className="ps-4 pt-3">{deck.name}</h5>
-                <div className="ps-5 pt-1 pb-5 deck-description">
-                  {deck.description}
-                </div>
-                <h6 className="text-end p-3">5 Cards</h6>
-              </div>
-            ))}
+      <ExpBar />
+      {activeComponent === "flashcard" ? (
+        <>
+          <div className="row w-50 ps-5">
             <button
-              className="col-sm-3 ms-5 card rounded-5 btn d-flex align-items-center justify-content-center"
-              id="add-deck"
-              onClick={() => handleOpenAddDeck(topic.id)}
+              className="btn col-sm-auto border rounded-5 me-2"
+              id="search"
             >
-              + Add Deck
+              <BsSearch />
+            </button>
+            <input
+              className="col-sm-10 rounded-5 border"
+              id="searchinput"
+              placeholder="Search..."
+            />
+          </div>
+
+          {topics.map((topic) => (
+            <div key={topic.id} className="mt-4">
+              <h3 className="ms-5">{topic.title}</h3>
+              <div
+                id="flashcard-container"
+                className="row flex-nowrap overflow-x-auto ms-1 me-1"
+              >
+                {topic.decks.map((deck, index) => (
+                  <div
+                    key={index}
+                    id="flashcard-card"
+                    className="col-sm-3 ms-5 card rounded-5 btn text-start p-3"
+                    onClick={() =>
+                      setActiveComponent({
+                        name: "flashcardDetails",
+                        deckTitle: deck.name,
+                        deckDescription: deck.description,
+                      })
+                    }
+                  >
+                    <h5 id="flashcard-title" className="m-2">
+                      {deck.name}
+                    </h5>
+                    <p
+                      id="flashcard-description"
+                      className="text-muted small ms-3"
+                    >
+                      {deck.description}
+                    </p>
+                    <h6 className="text-end mt-3">5 Cards</h6>
+                  </div>
+                ))}
+
+                <button
+                  className="col-sm-3 ms-5 card rounded-5 btn d-flex align-items-center justify-content-center"
+                  id="add-deck"
+                  onClick={() => handleOpenAddDeck(topic.id)}
+                >
+                  + Add Deck
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <div className="ms-5">
+            <button
+              className="btn ms-5 mt-4 ps-5 pe-5 rounded-5"
+              id="add-topic"
+              onClick={handleOpenAddTopic}
+            >
+              + Add Topic
             </button>
           </div>
-        </div>
-      ))}
-      <div className="ms-5">
-        <button
-          className="btn ms-5 mt-4 ps-5 pe-5 rounded-5"
-          id="add-topic"
-          onClick={handleOpenAddTopic}
-        >
-          + Add Topic
-        </button>
-      </div>
+        </>
+      ) : (
+        <FlashcardDetails
+          onBack={() => setActiveComponent("flashcard")}
+          deckTitle={activeComponent.deckTitle}
+          deckDescription={activeComponent.deckDescription}
+        />
+      )}
+
       {showAddDeckModal && (
         <div className="modal-backdrop-deck">
           <div className="modal-content p-4 rounded-5" id="card-bg">
@@ -149,6 +191,7 @@ export default function Flashcard() {
           </div>
         </div>
       )}
+
       {showAddTopicModal && (
         <div className="modal-backdrop-topic">
           <div className="modal-content p-4 rounded-5" id="card-bg">

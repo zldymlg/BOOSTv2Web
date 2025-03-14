@@ -7,10 +7,6 @@ import {
   firestore,
 } from "./firebase";
 import { doc, setDoc } from "firebase/firestore";
-
-import Header from "./Components/Header";
-import LandingNav from "./Components/LandingPageNavigation";
-import Footer from "./Components/Footer";
 import TermsPolicy from "./Components/TermsPolicy";
 import "bootstrap/dist/css/bootstrap.css";
 import "/src/Signup.css";
@@ -29,7 +25,6 @@ const handleGoogleSignIn = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
 
-    // Redirect after successful login
     alert(
       `Welcome, ${user.displayName || "User"}! Redirecting to dashboard...`
     );
@@ -39,6 +34,16 @@ const handleGoogleSignIn = async () => {
     setError("Google Sign-In failed. Please try again.");
   }
 };
+const restrictedUsernames = [
+  "admin",
+  "support",
+  "test",
+  "user",
+  "root",
+  "bantot",
+  "69",
+  "tite",
+];
 
 const Signup: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -96,12 +101,35 @@ const Signup: React.FC = () => {
     } catch (err: any) {
       setError(err.message);
     }
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+
+      if (name === "name") {
+        const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+
+        if (!usernameRegex.test(value) && value !== "") {
+          setError(
+            "Username must be 3-20 characters and contain only letters, numbers, and underscores."
+          );
+          return;
+        }
+
+        if (restrictedUsernames.includes(value.toLowerCase())) {
+          setError(
+            "This username is not allowed. Please choose a different one."
+          );
+          return;
+        }
+
+        setError("");
+      }
+
+      setUserInfo({ ...userInfo, [name]: value });
+    };
   };
 
   return (
     <>
-      <Header />
-      <LandingNav />
       <motion.div
         className="d-flex justify-content-center h-100"
         id="bg"
@@ -268,15 +296,11 @@ const Signup: React.FC = () => {
           >
             Sign Up with Google
           </motion.button>
-
-          <motion.div className="text-center mt-4 mb-3">
-            Already have an account? <a href="/login">Login</a>
-          </motion.div>
+          <div className="p-4"></div>
         </motion.div>
       </motion.div>
 
       {showTerms && <TermsPolicy onClose={() => setShowTerms(false)} />}
-      <Footer />
     </>
   );
 };

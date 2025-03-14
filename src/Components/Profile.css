@@ -1,0 +1,55 @@
+.profile-container {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+}
+
+.profile-info h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.profile-info p {
+    margin: 2px 0;
+    font-size: 16px;
+    color: gray;
+}
+
+.profile-section {
+    margin-top: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.achievements {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.achievement {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.more-text {
+    margin-left: auto;
+    color: blue;
+    cursor: pointer;
+}

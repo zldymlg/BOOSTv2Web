@@ -45,6 +45,15 @@ input:checked+.slider:before {
   transform: translateX(20px);
 }
 
+[data-theme='light'] {
+  --body-background: white;
+}
+
+[data-theme='dark'] {
+  --body-background: black;
+}
+
+
 
 .slider.round {
   border-radius: 34px;

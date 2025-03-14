@@ -12,9 +12,6 @@ function Header() {
       >
         <div className="col-12 text-center" id="Tagline">
           BOOST your way to productivity
-          <a href="#">
-            <img src={vectorImage} id="Arrow" alt="Arrow" />
-          </a>
         </div>
       </div>
     </React.Fragment>
