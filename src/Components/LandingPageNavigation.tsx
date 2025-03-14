@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import vectorImage from "/src/assets/Logo.png";
+import vectorImage from "../assets/LOGO.png";
 import "./LandingPageNavigation.css";
 
 function LandingNav() {
