@@ -5,6 +5,7 @@ import { BsSearch } from "react-icons/bs";
 import ExpBar from "./exp-notif-cal.tsx";
 import FlashcardDetails from "./Flashcard-content.tsx";
 
+
 type ActiveComponentState =
   | "flashcard"
   | { name: "flashcardDetails"; deckTitle: string; deckDescription: string };
@@ -76,6 +77,15 @@ export default function Flashcard() {
     };
     setTopics((prevTopics) => [...prevTopics, newTopic]);
     handleCloseAddTopic();
+  };
+  const handleDeleteDeck = (deckTitle: string) => {
+    setTopics((prevTopics) =>
+      prevTopics.map((topic) => ({
+        ...topic,
+        decks: topic.decks.filter((deck) => deck.name !== deckTitle),
+      }))
+    );
+    setActiveComponent("flashcard"); 
   };
 
   return (
@@ -156,6 +166,7 @@ export default function Flashcard() {
           onBack={() => setActiveComponent("flashcard")}
           deckTitle={activeComponent.deckTitle}
           deckDescription={activeComponent.deckDescription}
+          onDeleteDeck={handleDeleteDeck} 
         />
       )}
 
