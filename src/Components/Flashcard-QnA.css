@@ -1,0 +1,13 @@
+#exit-btn{
+    cursor: pointer;
+}
+
+#bg-1{
+    background-color: #FFCE1B;
+    border-radius: 10px;
+    padding: 1%;
+}
+#answer-btn{
+    border-radius: 10px;
+    background-color: #FFCE1B;
+}
