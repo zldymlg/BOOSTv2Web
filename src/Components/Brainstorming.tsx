@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./Brainstorming.css";
 import SmartGoals from "./SmartGoals";
 import Mindmap from "./Mindmap";
+import MindFlow from "./MindFlow"; // Import the new MindFlow component
 import { BsSearch } from "react-icons/bs";
 import "./SmartGoals.css";
 import ExpBar from "./exp-notif-cal.tsx";
@@ -42,7 +43,11 @@ export default function Brainstorming() {
             >
               <span>Smart Goals</span>
             </div>
-            <div className="col-sm-auto card rounded-5 btn" id="design-btn">
+            <div
+              className="col-sm-auto card rounded-5 btn"
+              id="design-btn"
+              onClick={() => setActiveComponent("mindflow")}
+            >
               <span>Mind Flow</span>
             </div>
           </div>
@@ -56,7 +61,9 @@ export default function Brainstorming() {
       ) : activeComponent === "mindmap" ? (
         <Mindmap onBack={() => setActiveComponent("brainstorming")} />
       ) : activeComponent === "smartgoals" ? (
-        <SmartGoals />
+        <SmartGoals onBack={() => setActiveComponent("brainstorming")} />
+      ) : activeComponent === "mindflow" ? (
+        <MindFlow onBack={() => setActiveComponent("brainstorming")} />
       ) : (
         <>
           <div className="row flex gap-4 p-4 justify-content-center">
