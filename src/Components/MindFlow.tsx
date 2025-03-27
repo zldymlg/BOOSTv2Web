@@ -1,5 +1,5 @@
 import React from "react";
-import "./MindFlow.css
+import "./MindFlow.css";
 import { IoIosArrowBack } from "react-icons/io";
 import { Save } from "lucide-react";
 import ReactFlow, { Controls, Background } from "reactflow";
