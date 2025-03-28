@@ -8,7 +8,6 @@ import { Modal, Button, Form } from "react-bootstrap";
 import { MdDeleteForever } from "react-icons/md";
 import StartFlashcards from "./Flashcard-QnA.tsx";
 
-
 interface Flashcard {
   question: string;
   answer: string;
@@ -20,6 +19,7 @@ interface FlashcardContentProps {
   deckDescription: string;
   onDeleteDeck: (deckTitle: string) => void;
 }
+
 
 export default function FlashcardContent({
   onBack,
@@ -70,24 +70,28 @@ export default function FlashcardContent({
     setCards(cards.filter((_, i) => i !== index));
   };
 
-  
   return (
     <React.Fragment>
-      <div className="container d-flex align-items-center justify-content-between mt-3">
-        <div className="d-flex align-items-center">
+      <div className="container d-flex align-items-center justify-content-between mt-3 flex-wrap">
+        <div className="d-flex align-items-center flex-wrap">
           <IoIosArrowBack
             onClick={onBack}
             size="40"
             className="m-2 me-4"
             style={{ cursor: "pointer" }}
           />
-          <div className="d-flex align-items-center gap-4">
+          <div className="d-flex align-items-center gap-4 flex-wrap">
             <GoStack size="100" />
             <div>
-              <h3 className="mb-1">{deckTitle}</h3>
-              <p className="mb-2 text-muted">by: @user</p>
-              <div className="d-flex align-items-center gap-5">
-                <button className="btn" id="start-btn" onClick={() => setIsStarting(true)}>
+              <h3 className="mb-1 text-center text-md-start text-wrap">{deckTitle}</h3>
+              <p className="mb-2 text-muted text-center text-md-start text-wrap">by: @user</p>
+              <div className="d-flex align-items-center gap-3 flex-wrap justify-content-center justify-content-md-start">
+                <button
+                  className="btn btn-primary"
+                  id="start-btn"
+                  onClick={() => setIsStarting(true)}
+                  disabled={cards.length < 4}
+                >
                   Start
                 </button>
                 <span className="text-primary fw-bold" style={{ cursor: "pointer" }}>
@@ -98,14 +102,14 @@ export default function FlashcardContent({
             </div>
           </div>
         </div>
-        <button className="btn btn-danger" onClick={() => setShowDeleteModal(true)}>
+        <button className="btn btn-danger mt-3 mt-md-0" onClick={() => setShowDeleteModal(true)}>
           Delete Deck
         </button>
       </div>
-      
+
       <div className="container mt-5">
         <h3>Description:</h3>
-        <span className="ms-5">{deckDescription}</span>
+        <span className="ms-5 text-wrap">{deckDescription}</span>
         <hr />
       </div>
 
@@ -114,9 +118,9 @@ export default function FlashcardContent({
         {cards.map((card, index) => (
           <div
             key={index}
-            className="card p-3 d-flex align-items-center justify-content-between flex-row mb-2"
+            className="card p-3 d-flex align-items-center justify-content-between flex-row mb-2 flex-wrap"
           >
-            <span>{card.question}</span>
+            <span className="text-break">{card.question}</span>
             <div className="d-flex gap-3">
               <FaEdit size="20" style={{ cursor: "pointer" }} onClick={() => openEditModal(index)} />
               <MdDeleteForever size="20" style={{ cursor: "pointer" }} onClick={() => deleteCard(index)} />
@@ -133,7 +137,7 @@ export default function FlashcardContent({
         </div>
       </div>
 
-      {/* Create Card Modal */}
+      {/* Create Modal */}
       <Modal
         show={showCreateModal}
         onHide={() => {
@@ -169,12 +173,16 @@ export default function FlashcardContent({
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={addCard}>Add Card</Button>
+          <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={addCard}>
+            Add Card
+          </Button>
         </Modal.Footer>
       </Modal>
 
-      {/* Edit Card Modal */}
+      {/* Edit Modal */}
       <Modal
         show={showEditModal}
         onHide={() => {
@@ -192,28 +200,42 @@ export default function FlashcardContent({
           <Form>
             <Form.Group>
               <Form.Label>Question</Form.Label>
-              <Form.Control type="text" value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)} />
+              <Form.Control
+                type="text"
+                value={newQuestion}
+                onChange={(e) => setNewQuestion(e.target.value)}
+              />
             </Form.Group>
             <Form.Group className="mt-3">
               <Form.Label>Answer</Form.Label>
-              <Form.Control type="text" value={newAnswer} onChange={(e) => setNewAnswer(e.target.value)} />
+              <Form.Control
+                type="text"
+                value={newAnswer}
+                onChange={(e) => setNewAnswer(e.target.value)}
+              />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={saveEdit}>Save Changes</Button>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={saveEdit}>
+            Save Changes
+          </Button>
         </Modal.Footer>
       </Modal>
 
-      {/* Delete Deck Modal */}
+      {/* Delete Modal */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Delete Deck</Modal.Title>
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this deck? This action cannot be undone.</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
           <Button
             variant="danger"
             onClick={() => {
