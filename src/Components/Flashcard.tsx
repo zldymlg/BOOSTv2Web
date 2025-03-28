@@ -29,6 +29,8 @@ export default function Flashcard() {
     }[]
   >([]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const handleOpenAddDeck = (topicId: number) => {
     setSelectedTopicId(topicId);
     setShowAddDeckModal(true);
@@ -78,6 +80,7 @@ export default function Flashcard() {
     setTopics((prevTopics) => [...prevTopics, newTopic]);
     handleCloseAddTopic();
   };
+
   const handleDeleteDeck = (deckTitle: string) => {
     setTopics((prevTopics) =>
       prevTopics.map((topic) => ({
@@ -88,28 +91,54 @@ export default function Flashcard() {
     setActiveComponent("flashcard"); 
   };
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const highlightText = (text: string, highlight: string) => {
+    if (!highlight.trim()) {
+      return text;
+    }
+    const regex = new RegExp(`(${highlight})`, "gi");
+    return text.split(regex).map((part, index) =>
+      part.toLowerCase() === highlight.toLowerCase() ? (
+        <span key={index} className="highlight">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
+  const filteredTopics = topics.filter((topic) =>
+    topic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    topic.decks.some((deck) =>
+      deck.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+
   return (
     <React.Fragment>
       <ExpBar />
       {activeComponent === "flashcard" ? (
         <>
-          <div className="row w-50 ps-5">
-            <button
-              className="btn col-sm-auto border rounded-5 me-2"
-              id="search"
-            >
+          <div className="row w-100 ps-3 pe-3">
+            <button className="btn col-auto border rounded-5 me-2" id="search">
               <BsSearch />
             </button>
             <input
-              className="col-sm-10 rounded-5 border"
+              className="col rounded-5 border"
               id="searchinput"
               placeholder="Search..."
+              value={searchQuery}
+              onChange={handleSearch}
             />
           </div>
 
-          {topics.map((topic) => (
+          {filteredTopics.map((topic) => (
             <div key={topic.id} className="mt-4">
-              <h3 className="ms-5">{topic.title}</h3>
+              <h3 className="ms-3">{highlightText(topic.title, searchQuery)}</h3>
               <div
                 id="flashcard-container"
                 className="row flex-nowrap overflow-x-auto ms-1 me-1"
@@ -118,7 +147,7 @@ export default function Flashcard() {
                   <div
                     key={index}
                     id="flashcard-card"
-                    className="col-sm-3 ms-5 card rounded-5 btn text-start p-3"
+                    className="col-12 col-sm-6 col-md-4 col-lg-3 ms-3 card rounded-5 btn text-start p-3"
                     onClick={() =>
                       setActiveComponent({
                         name: "flashcardDetails",
@@ -128,7 +157,7 @@ export default function Flashcard() {
                     }
                   >
                     <h5 id="flashcard-title" className="m-2">
-                      {deck.name}
+                      {highlightText(deck.name, searchQuery)}
                     </h5>
                     <p
                       id="flashcard-description"
@@ -141,7 +170,7 @@ export default function Flashcard() {
                 ))}
 
                 <button
-                  className="col-sm-3 ms-5 card rounded-5 btn d-flex align-items-center justify-content-center"
+                  className="col-12 col-sm-6 col-md-4 col-lg-3 ms-3 card rounded-5 btn d-flex align-items-center justify-content-center"
                   id="add-deck"
                   onClick={() => handleOpenAddDeck(topic.id)}
                 >
@@ -151,9 +180,9 @@ export default function Flashcard() {
             </div>
           ))}
 
-          <div className="ms-5">
+          <div className="ms-3">
             <button
-              className="btn ms-5 mt-4 ps-5 pe-5 rounded-5"
+              className="btn ms-3 mt-4 ps-5 pe-5 rounded-5"
               id="add-topic"
               onClick={handleOpenAddTopic}
             >
