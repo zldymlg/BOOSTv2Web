@@ -32,12 +32,7 @@ const initialEdges: Edge[] = [
 export default function MindFlow({ onBack }: MindFlowProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-
-  const toggleToolbox = () => {
-    setIsExpanded(!isExpanded);
-  };
 
   const onConnect = useCallback(
     (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
@@ -54,6 +49,16 @@ export default function MindFlow({ onBack }: MindFlowProps) {
     setNodes((nds) => [...nds, newNode]);
   };
 
+  const deleteNode = () => {
+    if (selectedNodeId) {
+      setNodes((nds) => nds.filter((node) => node.id !== selectedNodeId));
+      setEdges((eds) => eds.filter((edge) => edge.source !== selectedNodeId && edge.target !== selectedNodeId));
+      setSelectedNodeId(null);
+    } else {
+      alert("Please select a node to delete.");
+    }
+  };
+
   const onNodeDoubleClick = (event: React.MouseEvent, node: Node) => {
     const newLabel = prompt("Enter new label:", node.data.label);
     if (newLabel) {
@@ -61,14 +66,6 @@ export default function MindFlow({ onBack }: MindFlowProps) {
         nds.map((n) => (n.id === node.id ? { ...n, data: { ...n.data, label: newLabel } } : n))
       );
     }
-  };
-
-  const changeNodeColor = (nodeId: string, color: string) => {
-    setNodes((nds) =>
-      nds.map((n) =>
-        n.id === nodeId ? { ...n, style: { ...n.style, backgroundColor: color } } : n
-      )
-    );
   };
 
   const onNodeClick = (event: React.MouseEvent, node: Node) => {
@@ -97,26 +94,9 @@ export default function MindFlow({ onBack }: MindFlowProps) {
           <Background />
         </ReactFlow>
       </div>
-      <div
-        className={`toolbox ${isExpanded ? "expanded" : ""}`}
-        onClick={toggleToolbox}
-      >
-        {isExpanded ? (
-          <div className="toolbox-content">
-            <button onClick={addNode}>Add Node</button>
-            {selectedNodeId && (
-              <div>
-                <p>Change Node Color:</p>
-                <input
-                  type="color"
-                  onChange={(e) => changeNodeColor(selectedNodeId, e.target.value)}
-                />
-              </div>
-            )}
-          </div>
-        ) : (
-          <span>Toolbox</span>
-        )}
+      <div className="add-node-container">
+        <button onClick={addNode} className="btn">Add Node</button>
+        <button onClick={deleteNode} className="btn">Delete Node</button>
       </div>
     </React.Fragment>
   );
