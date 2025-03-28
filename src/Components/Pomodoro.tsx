@@ -7,6 +7,7 @@ import {
   FaSave,
   FaCog,
   FaArrowLeft,
+  FaTrash,
 } from "react-icons/fa";
 import "./Pomodoro.css";
 import ExpBar from "./exp-notif-cal.tsx";
@@ -19,6 +20,7 @@ import {
   onSnapshot,
   addDoc,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
 } from "firebase/firestore";
 
@@ -37,6 +39,7 @@ const PomodoroTimer: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const startTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number | null>(null);
   const [pomodoroDuration, setPomodoroDuration] = useState(25 * 60);
   const [shortBreakDuration, setShortBreakDuration] = useState(5 * 60);
@@ -46,9 +49,13 @@ const PomodoroTimer: React.FC = () => {
   const ringtones = ["ringtone1", "ringtone2", "ringtone3"];
   const [backgroundMusic, setBackgroundMusic] = useState("Time Ticking");
   const backgroundMusics = ["Time Ticking", "Rainy", "Cozy"];
-  const [timeLeft, setTimeLeft] = useState(pomodoroDuration);
-  const [isRunning, setIsRunning] = useState(false);
-  const [mode, setMode] = useState("pomodoro");
+  const [timeLeft, setTimeLeft] = useState(
+    parseInt(localStorage.getItem("timeLeft") || `${25 * 60}`, 10)
+  ); // Load timeLeft from localStorage
+  const [isRunning, setIsRunning] = useState(
+    JSON.parse(localStorage.getItem("isRunning") || "false")
+  ); // Load isRunning from localStorage
+  const [mode, setMode] = useState(localStorage.getItem("mode") || "pomodoro"); //Load mode from localStorage
   const [showStartWarning, setShowStartWarning] = useState(false);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [showTaskInput, setShowTaskInput] = useState(false);
@@ -113,7 +120,6 @@ const PomodoroTimer: React.FC = () => {
           ...newTask,
           createdAt: serverTimestamp(),
         });
-        // Update the task with the actual ID from Firestore
         setTasks((prevTasks) =>
           prevTasks.map((t) =>
             t.id === Date.now().toString() ? { ...t, id: docRef.id } : t
@@ -183,7 +189,7 @@ const PomodoroTimer: React.FC = () => {
   };
   const resetTimer = () => {
     stopTimer();
-    setTimeLeft(25 * 60);
+    setTimeLeft(pomodoroDuration);
   };
 
   useEffect(() => {
@@ -199,30 +205,47 @@ const PomodoroTimer: React.FC = () => {
     setLongBreakDuration(storedSettings.longBreakDuration || 10 * 60);
     setAutoSwitch(storedSettings.autoSwitch || true);
     setRingtone(storedSettings.ringtone || "ringtone1");
-    setBackgroundMusic(storedSettings.backgroundMusic || "background1");
-    setTimeLeft(pomodoroDuration);
-  }, []);
+    setBackgroundMusic(storedSettings.backgroundMusic || "Time Ticking");
+    //Load timeLeft from localStorage if available
+    const storedTimeLeft = parseInt(
+      localStorage.getItem("timeLeft") || `${25 * 60}`,
+      10
+    );
+    if (storedTimeLeft > 0 && isRunning) {
+      setTimeLeft(storedTimeLeft);
+    }
+  }, [isRunning]);
 
   useEffect(() => {
     if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          if (prevTime <= 0) {
-            clearInterval(intervalRef.current!);
-            setIsRunning(false);
-            handleSessionEnd();
-            playRingtone();
-            return getCurrentSessionDuration();
-          }
-          return prevTime - 1;
-        });
-      }, 1000);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+      startTimeRef.current = Date.now();
+      const animate = () => {
+        const elapsedTime = Date.now() - startTimeRef.current;
+        const newTimeLeft = Math.max(
+          0,
+          timeLeft - Math.floor(elapsedTime / 1000)
+        );
+        setTimeLeft(newTimeLeft);
+        if (newTimeLeft > 0) {
+          animationFrameRef.current = requestAnimationFrame(animate);
+        } else {
+          handleSessionEnd();
+          playRingtone();
+        }
+      };
+      animationFrameRef.current = requestAnimationFrame(animate);
+    } else {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
     }
-    return () => clearInterval(intervalRef.current!);
-  }, [isRunning]);
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isRunning, timeLeft]);
 
   useEffect(() => {
     return () => stopBackgroundMusic();
@@ -389,6 +412,7 @@ const PomodoroTimer: React.FC = () => {
 
   const handleModeChange = (newMode: string) => {
     setMode(newMode);
+    localStorage.setItem("mode", newMode); //Save mode to localStorage
     setIsRunning(false);
     setTimeLeft(
       newMode === "pomodoro"
@@ -421,6 +445,60 @@ const PomodoroTimer: React.FC = () => {
 
     setter(Math.max(newValueInSeconds, minValueInSeconds));
   };
+
+  const deleteTask = async (taskId: string, userId: string) => {
+    if (!userId || !taskId) {
+      console.error("User ID or Task ID is missing");
+      return;
+    }
+
+    try {
+      const taskRef = doc(firestore, "users", userId, "tasks", taskId);
+      await deleteDoc(taskRef);
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+
+      if (tasks.length === 0) {
+        stopTimer(); //Completely stops the timer
+        setTimeLeft(pomodoroDuration);
+        setMode("pomodoro");
+        setCurrentTaskIndex(0);
+        setIsRunning(false); //Important: Stop the timer explicitly
+
+        //Restart the timer animation if needed (e.g., if isRunning is true)
+        startTimeRef.current = 0; //Reset startTime
+        animationFrameRef.current = null; //Reset animationFrame
+        if (isRunning) {
+          setIsRunning(true); //Restart the timer
+          startTimeRef.current = Date.now();
+          const animate = () => {
+            //The same animation function
+            const elapsedTime = Date.now() - startTimeRef.current;
+            const newTimeLeft = Math.max(
+              0,
+              timeLeft - Math.floor(elapsedTime / 1000)
+            );
+            setTimeLeft(newTimeLeft);
+            if (newTimeLeft > 0) {
+              animationFrameRef.current = requestAnimationFrame(animate);
+            } else {
+              handleSessionEnd();
+              playRingtone();
+            }
+          };
+          animationFrameRef.current = requestAnimationFrame(animate);
+        }
+      } else if (currentTaskIndex >= tasks.length) {
+        setCurrentTaskIndex(0);
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };  
+
+  useEffect(() => {
+    localStorage.setItem("timeLeft", JSON.stringify(timeLeft)); // Save timeLeft to localStorage
+    localStorage.setItem("isRunning", JSON.stringify(isRunning)); //Save isRunning to localStorage
+  }, [timeLeft, isRunning]); // Add timeLeft and isRunning to the dependency array
 
   if (loading) {
     return <div>Loading...</div>;
@@ -706,7 +784,7 @@ const PomodoroTimer: React.FC = () => {
 
         {sortedTasks.map((t, index) => (
           <Card
-            key={t.id} // Use the actual task ID as the key
+            key={t.id}
             className="mt-3 p-3 rounded d-flex flex-row align-items-start bg-success shadow text-start"
             style={{ color: "white" }}
           >
@@ -730,6 +808,13 @@ const PomodoroTimer: React.FC = () => {
               <span className="badge bg-light text-dark">
                 Pomos Est.: {t.pomosEst} / Completed: {t.pomodorosCompleted}
               </span>
+              <Button
+                variant="danger"
+                onClick={() => deleteTask(t.id!, user.uid)}
+                className="ms-auto"
+              >
+                <FaTrash />
+              </Button>
             </div>
           </Card>
         ))}
