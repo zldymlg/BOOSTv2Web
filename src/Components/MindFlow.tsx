@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "./MindFlow.css";
 import { IoIosArrowBack } from "react-icons/io";
 import { Save } from "lucide-react";
@@ -21,21 +21,40 @@ const initialEdges = [
 ];
 
 export default function MindFlow({ onBack }: MindFlowProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleToolbox = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <React.Fragment>
-    <div className="mindflow-container">
-      <IoIosArrowBack size={30} onClick={onBack} style={{cursor:"pointer"}}/>
-      <span id="title">Mind Flow</span>
-      <Save size={30}/>
-    </div>
-    {/* mindflow here */}
-    <div id="flow">
-      <ReactFlow nodes={initialNodes} edges={initialEdges} fitView>
-        <Controls />
-        <Background />
-      </ReactFlow>
-    </div>
+      <div className="mindflow-container">
+        <IoIosArrowBack size={30} onClick={onBack} style={{ cursor: "pointer" }} />
+        <span id="title">Mind Flow</span>
+        <Save size={30} />
+      </div>
+      {/* mindflow here */}
+      <div id="flow">
+        <ReactFlow nodes={initialNodes} edges={initialEdges} fitView>
+          <Controls />
+          <Background />
+        </ReactFlow>
+      </div>
+      {/* Toolbox */}
+      <div
+        className={`toolbox ${isExpanded ? "expanded" : ""}`}
+        onClick={toggleToolbox}
+      >
+        {isExpanded ? (
+          <div className="toolbox-content">
+            <p>Toolbox Content</p>
+            <p>Additional Options</p>
+          </div>
+        ) : (
+          <span>Toolbox</span>
+        )}
+      </div>
     </React.Fragment>
   );
 };
-
