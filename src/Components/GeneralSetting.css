@@ -1,3 +1,19 @@
+:root {
+  --body-background: white;
+  --text-color: black;
+}
+
+[data-theme='dark'] {
+  --body-background: black;
+  --text-color: white;
+}
+
+body {
+  background-color: var(--body-background);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 .switch {
   position: relative;
   display: inline-block;
@@ -19,8 +35,8 @@
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
+  transition: 0.4s;
+  border-radius: 34px;
 }
 
 .slider:before {
@@ -31,36 +47,16 @@
   left: 4px;
   bottom: 4px;
   background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
+  transition: 0.4s;
+  border-radius: 50%;
 }
 
-input:checked+.slider {
+input:checked + .slider {
   background-color: #2196F3;
 }
 
-input:checked+.slider:before {
-  -webkit-transform: translateX(20px);
-  -ms-transform: translateX(20px);
+input:checked + .slider:before {
   transform: translateX(20px);
-}
-
-[data-theme='light'] {
-  --body-background: white;
-}
-
-[data-theme='dark'] {
-  --body-background: black;
-}
-
-
-
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
 }
 
 #leftside {

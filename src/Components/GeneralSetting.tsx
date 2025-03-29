@@ -6,10 +6,10 @@ import { IoIosArrowForward } from "react-icons/io";
 import "./GeneralSetting.css";
 
 export default function General() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [date, setDate] = useState<string>(formatDate(new Date()));
   const [time, setTime] = useState<string>(formatTime(new Date()));
-  const [autoUpdate, setAutoUpdate] = useState<boolean>(true); // ✅ Default to ON
+  const [autoUpdate, setAutoUpdate] = useState<boolean>(true);
   const [showDateInput, setShowDateInput] = useState<boolean>(false);
   const [showTimeInput, setShowTimeInput] = useState<boolean>(false);
 
@@ -24,10 +24,15 @@ export default function General() {
   function formatTime(dateObj: Date): string {
     return dateObj.toLocaleTimeString("en-US", {
       hour: "numeric",
-      minute: "2-digit", // Ensure minutes are included
+      minute: "2-digit",
       hour12: true,
     });
   }
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     if (autoUpdate) {
@@ -43,20 +48,12 @@ export default function General() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const { latitude, longitude } = position.coords;
-          fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-          )
-            .then((res) => res.json())
-            .then(() => updateDateTime())
-            .catch((err) => console.error("Error fetching timezone:", err));
+          updateDateTime();
         },
         (error) => {
           console.error("Error getting location:", error);
         }
       );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
     }
   };
 
@@ -77,7 +74,8 @@ export default function General() {
             <label className="switch ms-5 me-5">
               <input
                 type="checkbox"
-                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                checked={theme === "dark"}
+                onChange={() => setTheme(theme === "light" ? "dark" : "light")}
               />
               <span className="slider round"></span>
             </label>
@@ -85,23 +83,16 @@ export default function General() {
           <div className="mt-5">
             <h3>Language Preferences</h3>
             <ul className="row gap-3">
-              <li className="w-50 btn fw-medium" id="gen-btn">
-                Filipino
-              </li>
-              <li className="w-50 btn fw-medium" id="gen-btn">
-                English
-              </li>
+              <li className="w-50 btn fw-medium" id="gen-btn">Filipino</li>
+              <li className="w-50 btn fw-medium" id="gen-btn">English</li>
             </ul>
           </div>
           <div className="mt-5">
             <h3>Feedback and Support</h3>
             <ul className="row gap-3">
+              <li className="w-50 btn" id="gen-btn">Send Feedback</li>
               <li className="w-50 btn" id="gen-btn">
-                Send Feedback
-              </li>
-              <li className="w-50 btn" id="gen-btn">
-                <AiFillQuestionCircle size={20} className="me-2" />
-                Help
+                <AiFillQuestionCircle size={20} className="me-2" /> Help
               </li>
             </ul>
           </div>
@@ -118,7 +109,6 @@ export default function General() {
             <span className="slider round"></span>
           </label>
 
-          {/* Date Display & Picker */}
           <div className="mt-3 d-flex align-items-center justify-content-between w-75">
             <h4 className="mb-0">Date</h4>
             {showDateInput && !autoUpdate ? (
@@ -138,7 +128,6 @@ export default function General() {
             />
           </div>
 
-          {/* Time Display & Picker */}
           <div className="mt-3 d-flex align-items-center justify-content-between w-75">
             <h4 className="mb-0">Time</h4>
             {showTimeInput && !autoUpdate ? (
