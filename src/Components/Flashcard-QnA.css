@@ -1,13 +1,41 @@
-#exit-btn{
+#exit-btn {
     cursor: pointer;
-}
+  }
+  
+  #bg-1 {
+    font-size: 1rem;
+    flex-wrap: wrap;
+    background-color: #FFCE1B;
+    border-radius: 10px;
+    padding: 0.5rem;
+    justify-content: center;
+  }
+  
+  #question-card {
+    padding: 1rem;
+    font-size: 1.2rem;
+  }
+  
+  #choice-btn {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #FFCE1B;
+    color: black;
+  }
 
-#bg-1{
-    background-color: #FFCE1B;
-    border-radius: 10px;
-    padding: 1%;
-}
-#answer-btn{
-    border-radius: 10px;
-    background-color: #FFCE1B;
-}
+
+  
+  @media (max-width: 576px) {
+    #bg-1 {
+      font-size: 0.9rem;
+    }
+  
+    #question-card {
+      font-size: 1rem;
+    }
+  
+    #choices-container button {
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+    }
+  }

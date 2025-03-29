@@ -152,7 +152,7 @@ export default function General() {
             />
           </div>
         </div>
-      </div>
+      </div> 
     </React.Fragment>
   );
 }
