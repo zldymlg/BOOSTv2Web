@@ -87,7 +87,7 @@ const PomodoroTimer: React.FC = () => {
   }, []);
 
   const loadTasks = async (uid: string) => {
-    const tasksCollectionRef = collection(firestore, "users", uid, "tasks");
+    const tasksCollectionRef = collection(firestore, "users", uid, "Pomotask");
     const q = query(tasksCollectionRef, where("completed", "==", false));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const newTasks: Task[] = [];
@@ -115,7 +115,7 @@ const PomodoroTimer: React.FC = () => {
 
       try {
         const userDocRef = doc(firestore, "users", user.uid);
-        const tasksCollectionRef = collection(userDocRef, "tasks");
+        const tasksCollectionRef = collection(userDocRef, "Pomotask");
         const docRef = await addDoc(tasksCollectionRef, {
           ...newTask,
           createdAt: serverTimestamp(),
@@ -167,7 +167,13 @@ const PomodoroTimer: React.FC = () => {
     }
 
     try {
-      const taskRef = doc(firestore, "users", userId, "tasks", currentTask.id);
+      const taskRef = doc(
+        firestore,
+        "users",
+        userId,
+        "Pomotask",
+        currentTask.id
+      );
       await updateDoc(taskRef, {
         pomodorosCompleted: currentTask.pomodorosCompleted,
         completed: currentTask.completed,
@@ -284,10 +290,17 @@ const PomodoroTimer: React.FC = () => {
 
   const playRingtone = () => {
     const newRingtonePlayer = new Audio(getRingtoneURL(ringtone));
+
     newRingtonePlayer.play().catch((error) => {
       console.error("Error playing ringtone:", error);
     });
+
     ringtonePlayerRef.current = newRingtonePlayer;
+
+    setTimeout(() => {
+      newRingtonePlayer.pause();
+      newRingtonePlayer.currentTime = 0;
+    }, 3000);
   };
 
   const getCurrentSessionDuration = () => {
@@ -322,23 +335,37 @@ const PomodoroTimer: React.FC = () => {
 
     if (autoSwitch && tasks.length > 0) {
       const currentTask = tasks[currentTaskIndex];
-      if (
-        currentTask &&
-        currentTask.pomodorosCompleted < currentTask.pomosEst
-      ) {
-        setMode("pomodoro");
-        setTimeLeft(pomodoroDuration);
-      } else {
-        const nextTaskIndex = (currentTaskIndex + 1) % tasks.length;
-        setCurrentTaskIndex(nextTaskIndex);
-        const nextMode =
-          (nextTaskIndex + 1) % 4 === 0 ? "longBreak" : "shortBreak";
-        setMode(nextMode);
-        setTimeLeft(
-          nextMode === "longBreak" ? longBreakDuration : shortBreakDuration
-        );
+
+      if (currentTask) {
+        if (mode === "pomodoro") {
+          // Finish Pomodoro, increase counter
+          currentTask.pomodorosCompleted++;
+
+          if (currentTask.pomodorosCompleted >= currentTask.pomosEst) {
+            // Task is fully completed, move to next task
+            const nextTaskIndex = (currentTaskIndex + 1) % tasks.length;
+            setCurrentTaskIndex(nextTaskIndex);
+            setMode("pomodoro");
+            setTimeLeft(pomodoroDuration);
+          } else {
+            // After every 4 Pomodoros → Long Break, otherwise → Short Break
+            const nextMode =
+              currentTask.pomodorosCompleted % 4 === 0
+                ? "longBreak"
+                : "shortBreak";
+            setMode(nextMode);
+            setTimeLeft(
+              nextMode === "longBreak" ? longBreakDuration : shortBreakDuration
+            );
+          }
+        } else {
+          // If we are on a break, return to Pomodoro when break ends
+          setMode("pomodoro");
+          setTimeLeft(pomodoroDuration);
+        }
       }
     } else {
+      // No tasks available, reset timer and stop auto-switch
       setMode("pomodoro");
       setTimeLeft(pomodoroDuration);
       stopBackgroundMusic();
@@ -349,11 +376,11 @@ const PomodoroTimer: React.FC = () => {
   const getRingtoneURL = (ringtoneName: string): string => {
     switch (ringtoneName) {
       case "ringtone2":
-        return "/sounds/ringtone2.mp3";
+        return "src/assets/Sound/ALARMCLOCK.mp3";
       case "ringtone3":
-        return "/sounds/ringtone3.mp3";
+        return "src/assets/Sound/IPHONE.mp3";
       default:
-        return "/sounds/ringtone1.mp3";
+        return "src/assets/Sound/IPHONE.mp3";
     }
   };
   const getBackgroundMusicURL = (musicName: string): string => {
@@ -453,47 +480,41 @@ const PomodoroTimer: React.FC = () => {
     }
 
     try {
-      const taskRef = doc(firestore, "users", userId, "tasks", taskId);
+      const taskRef = doc(firestore, "users", userId, "Pomotask", taskId);
       await deleteDoc(taskRef);
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
 
-      if (tasks.length === 0) {
-        stopTimer(); //Completely stops the timer
-        setTimeLeft(pomodoroDuration);
-        setMode("pomodoro");
-        setCurrentTaskIndex(0);
-        setIsRunning(false); //Important: Stop the timer explicitly
+      // Update state: Remove task from list
+      setTasks((prevTasks) => {
+        const updatedTasks = prevTasks.filter((task) => task.id !== taskId);
 
-        //Restart the timer animation if needed (e.g., if isRunning is true)
-        startTimeRef.current = 0; //Reset startTime
-        animationFrameRef.current = null; //Reset animationFrame
-        if (isRunning) {
-          setIsRunning(true); //Restart the timer
-          startTimeRef.current = Date.now();
-          const animate = () => {
-            //The same animation function
-            const elapsedTime = Date.now() - startTimeRef.current;
-            const newTimeLeft = Math.max(
-              0,
-              timeLeft - Math.floor(elapsedTime / 1000)
-            );
-            setTimeLeft(newTimeLeft);
-            if (newTimeLeft > 0) {
-              animationFrameRef.current = requestAnimationFrame(animate);
-            } else {
-              handleSessionEnd();
-              playRingtone();
-            }
-          };
-          animationFrameRef.current = requestAnimationFrame(animate);
+        // If no tasks left, stop & reset timer
+        if (updatedTasks.length === 0) {
+          stopTimer(); // Stops any running interval
+          setTimeLeft(pomodoroDuration); // Reset to default Pomodoro time
+          setMode("pomodoro");
+          setIsRunning(false); // Explicitly stop the timer
+
+          // Cancel any ongoing animations
+          if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+          }
         }
-      } else if (currentTaskIndex >= tasks.length) {
-        setCurrentTaskIndex(0);
-      }
+
+        return updatedTasks;
+      });
+
+      // Handle the current task index
+      setCurrentTaskIndex((prevIndex) => {
+        if (prevIndex >= tasks.length - 1) {
+          return 0; // Reset to first task if the last one is deleted
+        }
+        return prevIndex;
+      });
     } catch (error) {
       console.error("Error deleting task:", error);
     }
-  };  
+  };
 
   useEffect(() => {
     localStorage.setItem("timeLeft", JSON.stringify(timeLeft)); // Save timeLeft to localStorage
@@ -781,7 +802,6 @@ const PomodoroTimer: React.FC = () => {
             </Form>
           </Card>
         )}
-
         {sortedTasks.map((t, index) => (
           <Card
             key={t.id}
