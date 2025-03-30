@@ -6,12 +6,17 @@ import { IoIosArrowForward } from "react-icons/io";
 import "./GeneralSetting.css";
 
 export default function General() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState<string>(() =>(localStorage.getItem)("theme") ?? "light");
   const [date, setDate] = useState<string>(formatDate(new Date()));
   const [time, setTime] = useState<string>(formatTime(new Date()));
   const [autoUpdate, setAutoUpdate] = useState<boolean>(true); // ✅ Default to ON
   const [showDateInput, setShowDateInput] = useState<boolean>(false);
   const [showTimeInput, setShowTimeInput] = useState<boolean>(false);
+
+  useEffect(() => {
+    document.body.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   function formatDate(dateObj: Date): string {
     return dateObj.toLocaleDateString("en-US", {
@@ -45,7 +50,7 @@ export default function General() {
         (position) => {
           const { latitude, longitude } = position.coords;
           fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+            https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en
           )
             .then((res) => res.json())
             .then(() => updateDateTime())
@@ -167,3 +172,4 @@ export default function General() {
     </React.Fragment>
   );
 }
+
