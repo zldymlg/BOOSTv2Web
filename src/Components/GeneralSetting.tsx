@@ -24,7 +24,7 @@ export default function General() {
   function formatTime(dateObj: Date): string {
     return dateObj.toLocaleTimeString("en-US", {
       hour: "numeric",
-      minute: "2-digit", // Ensure minutes are included
+      minute: "2-digit",
       hour12: true,
     });
   }
