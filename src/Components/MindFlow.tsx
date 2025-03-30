@@ -1,41 +1,252 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import "./MindFlow.css";
 import { IoIosArrowBack } from "react-icons/io";
 import { Save } from "lucide-react";
-import ReactFlow, { Controls, Background } from "reactflow";
+import ReactFlow, {
+  Controls,
+  Background,
+  addEdge,
+  useNodesState,
+  useEdgesState,
+  Connection,
+  Edge,
+  Node,
+} from "reactflow";
 import "reactflow/dist/style.css";
 
 interface MindFlowProps {
   onBack: () => void;
 }
 
-const initialNodes = [
-  { id: "1", position: { x: 0, y: 0 }, data: { label: "Start" }, type: "input" },
-  { id: "2", position: { x: 200, y: 100 }, data: { label: "Process" } },
-  { id: "3", position: { x: 400, y: 200 }, data: { label: "End" }, type: "output" }
-];
-
-const initialEdges = [
-  { id: "e1-2", source: "1", target: "2" },
-  { id: "e2-3", source: "2", target: "3" }
-];
-
 export default function MindFlow({ onBack }: MindFlowProps) {
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editNodeData, setEditNodeData] = useState({
+    label: "",
+    size: 40,
+    color: "#000000",
+    textColor: "#000000",
+  });
+  const [newNodeData, setNewNodeData] = useState({
+    label: "",
+    size: 40,
+    color: "#ffffff",
+    textColor: "#000000",
+  });
+
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges]
+  );
+
+  const addNode = () => {
+    setNewNodeData({
+      label: "",
+      size: 40,
+      color: "#ffffff",
+      textColor: "#000000",
+    });
+    setIsAddModalOpen(true);
+  };
+
+  const handleAddSubmit = () => {
+    const textLength = newNodeData.label.length;
+    const nodeWidth = Math.max(100, textLength * 10);
+    const nodeHeight = 50;
+
+    const newNode: Node = {
+      id: `${nodes.length + 1}`,
+      position: { x: Math.random() * 400, y: Math.random() * 400 },
+      data: { label: newNodeData.label },
+      type: "default",
+      style: {
+        width: nodeWidth,
+        height: nodeHeight,
+        backgroundColor: newNodeData.color,
+        color: newNodeData.textColor,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "16px",
+      },
+    };
+    setNodes((nds) => [...nds, newNode]);
+    setIsAddModalOpen(false);
+  };
+
+  const deleteNode = () => {
+    if (selectedNodeId) {
+      setNodes((nds) => nds.filter((node) => node.id !== selectedNodeId));
+      setEdges((eds) => eds.filter((edge) => edge.source !== selectedNodeId && edge.target !== selectedNodeId));
+      setSelectedNodeId(null);
+    } else {
+      alert("Please select a node to delete.");
+    }
+  };
+
+  const deleteEdge = () => {
+    if (selectedEdgeId) {
+      setEdges((eds) => eds.filter((edge) => edge.id !== selectedEdgeId));
+      setSelectedEdgeId(null);
+    } else {
+      alert("Please select an edge to delete.");
+    }
+  };
+
+  const editNode = () => {
+    if (selectedNodeId) {
+      const selectedNode = nodes.find((node) => node.id === selectedNodeId);
+      if (selectedNode) {
+        setEditNodeData({
+          label: selectedNode.data.label || "",
+          size: selectedNode.style?.width || 40,
+          color: selectedNode.style?.backgroundColor || "#000000",
+          textColor: selectedNode.style?.color || "#000000",
+        });
+        setIsEditModalOpen(true);
+      }
+    } else {
+      alert("Please select a node to edit.");
+    }
+  };
+
+  const handleEditSubmit = () => {
+    const textLength = editNodeData.label.length;
+    const nodeWidth = Math.max(100, textLength * 10);
+    const nodeHeight = 50;
+
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === selectedNodeId
+          ? {
+              ...node,
+              data: { ...node.data, label: editNodeData.label },
+              style: {
+                ...node.style,
+                width: nodeWidth,
+                height: nodeHeight,
+                backgroundColor: editNodeData.color,
+                color: editNodeData.textColor,
+                fontSize: "16px",
+              },
+            }
+          : node
+      )
+    );
+    setIsEditModalOpen(false);
+  };
+
+  const onNodeClick = (event: React.MouseEvent, node: Node) => {
+    setSelectedNodeId(node.id);
+    setSelectedEdgeId(null);
+  };
+
+  const onEdgeClick = (event: React.MouseEvent, edge: Edge) => {
+    setSelectedEdgeId(edge.id);
+    setSelectedNodeId(null);
+  };
+
   return (
     <React.Fragment>
-    <div className="mindflow-container">
-      <IoIosArrowBack size={30} onClick={onBack} style={{cursor:"pointer"}}/>
-      <span id="title">Mind Flow</span>
-      <Save size={30}/>
-    </div>
-    {/* mindflow here */}
-    <div id="flow">
-      <ReactFlow nodes={initialNodes} edges={initialEdges} fitView>
-        <Controls />
-        <Background />
-      </ReactFlow>
-    </div>
+      <div className="mindflow-container">
+        <IoIosArrowBack size={30} onClick={onBack} style={{ cursor: "pointer" }} />
+        <span id="title">Mind Flow</span>
+        <Save size={30} />
+      </div>
+      <div id="flow">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
+          fitView
+          defaultEdgeOptions={{
+            style: { strokeWidth: 10 },
+          }}
+        >
+          <Controls />
+          <Background />
+        </ReactFlow>
+      </div>
+      <div
+        className={`add-node-container ${isAddModalOpen || isEditModalOpen ? "hidden" : ""}`}
+      >
+        <button onClick={addNode} className="btn">Add Node</button>
+        <button onClick={deleteNode} className="btn">Delete Node</button>
+        <button onClick={editNode} className="btn">Edit Node</button>
+        <button onClick={deleteEdge} className="btn">Delete Line</button>
+      </div>
+
+      {isAddModalOpen && (
+        <div className="edit-modal">
+          <h3>Add Node</h3>
+          <label>
+            Name:
+            <input
+              type="text"
+              value={newNodeData.label}
+              onChange={(e) => setNewNodeData({ ...newNodeData, label: e.target.value })}
+            />
+          </label>
+          <label>
+            Background Color:
+            <input
+              type="color"
+              value={newNodeData.color}
+              onChange={(e) => setNewNodeData({ ...newNodeData, color: e.target.value })}
+            />
+          </label>
+          <label>
+            Text Color:
+            <input
+              type="color"
+              value={newNodeData.textColor}
+              onChange={(e) => setNewNodeData({ ...newNodeData, textColor: e.target.value })}
+            />
+          </label>
+          <button onClick={handleAddSubmit} className="btn">Add</button>
+          <button onClick={() => setIsAddModalOpen(false)} className="btn">Cancel</button>
+        </div>
+      )}
+
+      {isEditModalOpen && (
+        <div className="edit-modal">
+          <h3>Edit Node</h3>
+          <label>
+            Name:
+            <input
+              type="text"
+              value={editNodeData.label}
+              onChange={(e) => setEditNodeData({ ...editNodeData, label: e.target.value })}
+            />
+          </label>
+          <label>
+            Background Color:
+            <input
+              type="color"
+              value={editNodeData.color}
+              onChange={(e) => setEditNodeData({ ...editNodeData, color: e.target.value })}
+            />
+          </label>
+          <label>
+            Text Color:
+            <input
+              type="color"
+              value={editNodeData.textColor}
+              onChange={(e) => setEditNodeData({ ...editNodeData, textColor: e.target.value })}
+            />
+          </label>
+          <button onClick={handleEditSubmit} className="btn">Save</button>
+          <button onClick={() => setIsEditModalOpen(false)} className="btn">Cancel</button>
+        </div>
+      )}
     </React.Fragment>
   );
-};
-
+}
