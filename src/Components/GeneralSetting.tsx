@@ -24,7 +24,7 @@ export default function General() {
   function formatTime(dateObj: Date): string {
     return dateObj.toLocaleTimeString("en-US", {
       hour: "numeric",
-      minute: "2-digit",
+      minute: "2-digit", // Ensure minutes are included
       hour12: true,
     });
   }
@@ -45,7 +45,7 @@ export default function General() {
         (position) => {
           const { latitude, longitude } = position.coords;
           fetch(
-            https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
           )
             .then((res) => res.json())
             .then(() => updateDateTime())
@@ -163,7 +163,7 @@ export default function General() {
             />
           </div>
         </div>
-      </div>
+      </div> 
     </React.Fragment>
   );
 }
