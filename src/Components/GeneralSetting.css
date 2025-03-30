@@ -53,24 +53,6 @@ input:checked+.slider:before {
   --body-background: black;
 }
 
-/* Light mode (default) */
-body[data-theme="light"] {
-  background-color: white;
-  color: black;
-}
-
-/* Dark mode */
-body[data-theme="dark"] {
-  background-color: #121212;
-  color: white;
-}
-
-/* Adjust switch slider for dark mode */
-.switch input:checked + .slider {
-  background-color: #2196F3;
-}
-
-
 
 
 .slider.round {
