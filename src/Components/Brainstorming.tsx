@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./Brainstorming.css";
 import SmartGoals from "./SmartGoals";
 import Mindmap from "./Mindmap";
-import MindFlow from "./MindFlow"; // Import the new MindFlow component
+import MindFlow from "./MindFlow"; 
 import { BsSearch } from "react-icons/bs";
 import "./SmartGoals.css";
 import ExpBar from "./exp-notif-cal.tsx";
