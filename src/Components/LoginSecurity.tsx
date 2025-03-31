@@ -1,10 +1,19 @@
 import React from "react";
 import { useState } from "react";
-import { FaFacebookSquare } from "react-icons/fa";
 import "./LoginSecurity.css";
+import { signInWithPopup } from "firebase/auth";
+import {auth, provider} from './'
+
+
 
 export default function LogSec() {
   const [showInput, setShowInput] = useState(false);
+
+  const handleFacebookLogin: () => void = () => {
+    signInWithPopup(auth, provider);
+  };
+  
+ 
 
   return (
     <React.Fragment>
@@ -38,8 +47,10 @@ export default function LogSec() {
         <h3>Social Media Login</h3>
         <ul className="row gap-2">
           <li className="w-50 btn">
-            <FaFacebookSquare size="30" />
+          <button className="btn btn-primary btn-md"
+            onClick={handleFacebookLogin}>
             Facebook
+            </button>
           </li>
           <li className="w-50 btn">Instagram</li>
           <li className="w-50 btn">Gmail</li>
