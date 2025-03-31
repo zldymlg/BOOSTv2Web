@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from "react";
-import React from "react";
 import "./MindFlow.css";
 import { IoIosArrowBack } from "react-icons/io";
 import { Save } from "lucide-react";
@@ -104,7 +103,7 @@ export default function MindFlow({ onBack }: MindFlowProps) {
       if (selectedNode) {
         setEditNodeData({
           label: selectedNode.data.label || "",
-          size: selectedNode.style?.width || 40,
+          size: Number (selectedNode.style?.width) || 40,
           color: selectedNode.style?.backgroundColor || "#000000",
           textColor: selectedNode.style?.color || "#000000",
         });
