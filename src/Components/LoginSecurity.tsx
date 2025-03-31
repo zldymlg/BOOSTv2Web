@@ -1,19 +1,32 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import "./LoginSecurity.css";
 import { signInWithPopup } from "firebase/auth";
-import {auth, provider} from './'
-
-
+import { auth, facebookProvider,googleProvider } from "./FirebaseConfig";
+import { User } from "firebase/auth"; 
 
 export default function LogSec() {
   const [showInput, setShowInput] = useState(false);
+  const [user, setUser] = useState<User | null>(null); 
 
   const handleFacebookLogin: () => void = () => {
-    signInWithPopup(auth, provider);
+    signInWithPopup(auth, facebookProvider)
+      .then((result) => {
+        setUser(result.user); 
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
-  
- 
+
+  const handleGoogleLogin: () => void = () => {
+    signInWithPopup(auth, googleProvider)
+      .then((result) => {
+        setUser(result.user); 
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   return (
     <React.Fragment>
@@ -47,14 +60,32 @@ export default function LogSec() {
         <h3>Social Media Login</h3>
         <ul className="row gap-2">
           <li className="w-50 btn">
-          <button className="btn btn-primary btn-md"
-            onClick={handleFacebookLogin}>
-            Facebook
+            <button
+              className="btn btn-primary btn-md"
+              onClick={handleFacebookLogin}
+            >
+              Facebook
             </button>
           </li>
           <li className="w-50 btn">Instagram</li>
-          <li className="w-50 btn">Gmail</li>
+          <li className="w-50 btn">
+          <button
+              className="btn btn-primary btn-md"
+              onClick={handleGoogleLogin}
+            >
+              Google
+              
+            </button>
+          </li>
         </ul>
+        
+        {user && (
+          <div className="user-info">
+            <p>Welcome, {user.displayName}</p> {/* Display user name */}
+            <p>Email: {user.email}</p> {/* Display email */}
+          </div>
+        )}
+
         <div className="row gap-5 mt-5">
           <li className="w-50 btn">Download Data</li>
           <li className="w-50 btn">Account Deletion</li>
