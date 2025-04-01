@@ -1,87 +1,290 @@
-import React, { useState } from "react";
-import "./Mindmap.css";
+import React, { useState, useCallback } from "react";
+import { IoIosArrowBack } from "react-icons/io";
+import { Save } from "lucide-react";
+import ReactFlow, {
+  Controls,
+  Background,
+  addEdge,
+  useNodesState,
+  useEdgesState,
+  Connection,
+  Edge,
+  Node,
+} from "reactflow";
+import "reactflow/dist/style.css";
 
-interface Node {
-  id: number;
-  x: number;
-  y: number;
+interface MindFlowProps {
+  onBack: () => void;
 }
 
-const Mindmap: React.FC = () => {
-  const [nodes, setNodes] = useState<Node[]>([
-    { id: 1, x: 250, y: 150 },
-    { id: 2, x: 150, y: 250 },
-    { id: 3, x: 350, y: 250 },
-  ]);
+const MessageModal = ({ message, onClose }: { message: string; onClose: () => void }) => (
+  <div className="message-modal">
+    <div className="message-modal-content">
+      <p>{message}</p>
+      <button onClick={onClose} className="btn">Close</button>
+    </div>
+  </div>
+);
 
-  const addNode = (parentX: number, parentY: number) => {
-    const newX = parentX + Math.random() * 100 - 50;
-    const newY = parentY + Math.random() * 100 - 50;
-    setNodes((prevNodes) => [
-      ...prevNodes,
-      { id: prevNodes.length + 1, x: newX, y: newY },
-    ]);
+export default function MindFlow({ onBack }: MindFlowProps) {
+  const [nodes, setNodes, onNodesChange] = useNodesState([
+    {
+      id: "idea", // Static node ID
+      position: { x: 200, y: 200 },
+      data: { label: "Idea" },
+      type: "default",
+      style: {
+        width: 100,
+        height: 50,
+        backgroundColor: "#f0f0f0",
+        color: "#000000",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "16px",
+      },
+      sourcePosition: "right",
+      targetPosition: "left",
+    },
+  ]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [editNodeData, setEditNodeData] = useState({
+    label: "",
+    size: 40,
+    color: "#000000",
+    textColor: "#000000",
+  });
+  const [newNodeData, setNewNodeData] = useState({
+    label: "",
+    size: 40,
+    color: "#ffffff",
+    textColor: "#000000",
+  });
+
+  const onConnect = useCallback(
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
+    [setEdges]
+  );
+
+  const addNode = () => {
+    setNewNodeData({
+      label: "",
+      size: 40,
+      color: "#ffffff",
+      textColor: "#000000",
+    });
+    setIsAddModalOpen(true);
+  };
+
+  const handleAddSubmit = () => {
+    const textLength = newNodeData.label.length;
+    const nodeWidth = Math.max(100, textLength * 10);
+    const nodeHeight = 50;
+
+    const newNode: Node = {
+      id: `${nodes.length + 1}`,
+      position: { x: Math.random() * 400, y: Math.random() * 400 },
+      data: { label: newNodeData.label },
+      type: "default",
+      style: {
+        width: nodeWidth,
+        height: nodeHeight,
+        backgroundColor: newNodeData.color,
+        color: newNodeData.textColor,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "16px",
+      },
+      sourcePosition: "right",
+      targetPosition: "left",
+    };
+    setNodes((nds) => [...nds, newNode]);
+    setIsAddModalOpen(false);
+  };
+
+  const deleteNode = () => {
+    if (selectedNodeId) {
+      if (selectedNodeId === "idea") {
+        setMessage("The 'Idea' node cannot be deleted.");
+        return;
+      }
+      setNodes((nds) => nds.filter((node) => node.id !== selectedNodeId));
+      setEdges((eds) => eds.filter((edge) => edge.source !== selectedNodeId && edge.target !== selectedNodeId));
+      setSelectedNodeId(null);
+    } else {
+      setMessage("Please select a node to delete.");
+    }
+  };
+
+  const deleteEdge = () => {
+    if (selectedEdgeId) {
+      setEdges((eds) => eds.filter((edge) => edge.id !== selectedEdgeId));
+      setSelectedEdgeId(null);
+    } else {
+      setMessage("Please select a line to delete.");
+    }
+  };
+
+  const editNode = () => {
+    if (selectedNodeId) {
+      const selectedNode = nodes.find((node) => node.id === selectedNodeId);
+      if (selectedNode) {
+        setEditNodeData({
+          label: selectedNode.data.label || "",
+          size: selectedNode.style?.width || 40,
+          color: selectedNode.style?.backgroundColor || "#000000",
+          textColor: selectedNode.style?.color || "#000000",
+        });
+        setIsEditModalOpen(true);
+      }
+    } else {
+      setMessage("Please select a node to edit.");
+    }
+  };
+
+  const handleEditSubmit = () => {
+    const textLength = editNodeData.label.length;
+    const nodeWidth = Math.max(100, textLength * 10);
+    const nodeHeight = 50;
+
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === selectedNodeId
+          ? {
+              ...node,
+              data: { ...node.data, label: editNodeData.label },
+              style: {
+                ...node.style,
+                width: nodeWidth,
+                height: nodeHeight,
+                backgroundColor: editNodeData.color,
+                color: editNodeData.textColor,
+                fontSize: "16px",
+              },
+              sourcePosition: "right",
+              targetPosition: "left",
+            }
+          : node
+      )
+    );
+    setIsEditModalOpen(false);
+  };
+
+  const onNodeClick = (event: React.MouseEvent, node: Node) => {
+    setSelectedNodeId(node.id);
+    setSelectedEdgeId(null);
+  };
+
+  const onEdgeClick = (event: React.MouseEvent, edge: Edge) => {
+    setSelectedEdgeId(edge.id);
+    setSelectedNodeId(null);
   };
 
   return (
-    <div className="mindmap-container">
-      <h1 className="mindmap-title">Mind Map</h1>
-
-      <div className="mindmap-wrapper">
-        <svg className="mindmap-svg" width="600" height="400">
-          <circle
-            cx="300"
-            cy="200"
-            r="30"
-            fill="#ffeb3b"
-            stroke="#000"
-            strokeWidth="2"
-          />
-          <text x="290" y="205" fontSize="12" fontWeight="bold">
-            Idea
-          </text>
-
-          {nodes.map((node) => (
-            <React.Fragment key={node.id}>
-              <line
-                x1="300"
-                y1="200"
-                x2={node.x}
-                y2={node.y}
-                stroke="#000"
-                strokeWidth="2"
-              />
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r="20"
-                fill="#fff"
-                stroke="#000"
-                strokeWidth="2"
-              />
-              <text x={node.x - 10} y={node.y + 5} fontSize="12">
-                Node {node.id}
-              </text>
-
-              <circle
-                cx={node.x + 30}
-                cy={node.y}
-                r="10"
-                fill="black"
-                stroke="white"
-                strokeWidth="2"
-                onClick={() => addNode(node.x, node.y)}
-                style={{ cursor: "pointer" }}
-              />
-              <text x={node.x + 25} y={node.y + 5} fontSize="14" fill="white">
-                +
-              </text>
-            </React.Fragment>
-          ))}
-        </svg>
+    <React.Fragment>
+      <div className="mindflow-container">
+        <IoIosArrowBack size={30} onClick={onBack} style={{ cursor: "pointer" }} />
+        <span id="title">Mind Map</span>
+        <Save size={30} />
       </div>
-    </div>
-  );
-};
+      <div id="flow">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
+          fitView
+          defaultEdgeOptions={{
+            style: { strokeWidth: 15 },
+          }}
+        >
+          <Controls />
+          <Background />
+        </ReactFlow>
+      </div>
+      <div
+        className={`add-node-container ${isAddModalOpen || isEditModalOpen ? "hidden" : ""}`}
+      >
+        <button onClick={addNode} className="btn">Add Node</button>
+        <button onClick={deleteNode} className="btn">Delete Node</button>
+        <button onClick={editNode} className="btn">Edit Node</button>
+        <button onClick={deleteEdge} className="btn">Delete Line</button>
+      </div>
 
-export default Mindmap;
+      {isAddModalOpen && (
+        <div className="edit-modal">
+          <h3>Add Node</h3>
+          <label>
+            Name:
+            <input
+              type="text"
+              value={newNodeData.label}
+              onChange={(e) => setNewNodeData({ ...newNodeData, label: e.target.value })}
+            />
+          </label>
+          <label>
+            Background Color:
+            <input
+              type="color"
+              value={newNodeData.color}
+              onChange={(e) => setNewNodeData({ ...newNodeData, color: e.target.value })}
+            />
+          </label>
+          <label>
+            Text Color:
+            <input
+              type="color"
+              value={newNodeData.textColor}
+              onChange={(e) => setNewNodeData({ ...newNodeData, textColor: e.target.value })}
+            />
+          </label>
+          <button onClick={handleAddSubmit} className="btn">Add</button>
+          <button onClick={() => setIsAddModalOpen(false)} className="btn">Cancel</button>
+        </div>
+      )}
+
+      {isEditModalOpen && (
+        <div className="edit-modal">
+          <h3>Edit Node</h3>
+          <label>
+            Name:
+            <input
+              type="text"
+              value={editNodeData.label}
+              onChange={(e) => setEditNodeData({ ...editNodeData, label: e.target.value })}
+            />
+          </label>
+          <label>
+            Background Color:
+            <input
+              type="color"
+              value={editNodeData.color}
+              onChange={(e) => setEditNodeData({ ...editNodeData, color: e.target.value })}
+            />
+          </label>
+          <label>
+            Text Color:
+            <input
+              type="color"
+              value={editNodeData.textColor}
+              onChange={(e) => setEditNodeData({ ...editNodeData, textColor: e.target.value })}
+            />
+          </label>
+          <button onClick={handleEditSubmit} className="btn">Save</button>
+          <button onClick={() => setIsEditModalOpen(false)} className="btn">Cancel</button>
+        </div>
+      )}
+
+      {message && <MessageModal message={message} onClose={() => setMessage(null)} />}
+    </React.Fragment>
+  );
+}
