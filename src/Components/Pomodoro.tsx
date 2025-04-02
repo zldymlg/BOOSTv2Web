@@ -622,10 +622,7 @@ const PomodoroTimer: React.FC = () => {
           </Card>
         )}
       </div>
-      <div
-        className="text-center p-4"
-        style={{ backgroundColor: mode !== "pomodoro" ? "#FFFFE0" : "" }}
-      >
+      <div className="text-center p-4">
         <Card
           id="Card"
           className={`p-4 rounded mt-3 ${
@@ -738,67 +735,72 @@ const PomodoroTimer: React.FC = () => {
           </Button>
         </div>
         {showTaskInput && (
-          <Card
-            className="mt-3 bg-success text-white p-3 rounded"
-            style={{ backgroundColor: "" }}
-          >
-            <h5>What are you working on?</h5>
+          <Card className="mt-3 bg-success text-white p-3 rounded b">
             <Form>
+              <Form>
+                <Form.Group>
+                  <Form.Control
+                    as="textarea"
+                    id="taskTitle"
+                    value={task}
+                    onChange={(e) => setTask(e.target.value)}
+                    placeholder="What are you working on?"
+                    className="transparent-input"
+                    rows={1.5}
+                    style={{
+                      resize: "none",
+                      whiteSpace: "pre-wrap",
+                      overflowY: "auto",
+                    }}
+                  />
+                </Form.Group>
+              </Form>
+
               <Form.Group className="mb-3">
-                <Form.Label htmlFor="taskTitle">Title</Form.Label>
-                <Form.Control
-                  type="text"
-                  id="taskTitle"
-                  value={task}
-                  onChange={(e) => setTask(e.target.value)}
-                  placeholder="Enter task"
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label htmlFor="taskNotes">Notes</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={2}
                   id="taskNotes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Additional notes"
+                  placeholder="Write any additional notes here..."
+                  className="tasknotes"
                 />
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label htmlFor="taskPriority">Priority</Form.Label>
-                <Form.Select
-                  id="taskPriority"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                >
-                  <option value="Urgent">Urgent</option>
-                  <option value="Important">Important</option>
-                  <option value="Not Urgent">Not Urgent</option>
-                </Form.Select>
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label htmlFor="taskPomosEst">Pomos Est.</Form.Label>
-                <Form.Select
-                  id="taskPomosEst"
-                  value={selectedPomosEst}
-                  onChange={handlePomosEstChange}
-                >
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={3}>3</option>
-                  <option value={4}>4</option>
-                  <option value={5}>5</option>
-                  <option value={6}>6</option>
-                  <option value={7}>7</option>
-                  <option value={8}>8</option>
-                  <option value={9}>9</option>
-                  <option value={10}>10</option>
-                </Form.Select>
-              </Form.Group>
-              <Button className="mt-2" variant="light" onClick={addTask}>
-                <FaSave /> Save Task
-              </Button>
+              <div className="row">
+                <Form.Group className="col">
+                  <Form.Select
+                    id="taskPriority"
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value)}
+                  >
+                    <option value="Urgent">High Priority</option>
+                    <option value="Important">Medium Priority</option>
+                    <option value="Not Urgent">Low Priority</option>
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="col">
+                  <Form.Select
+                    id="taskPomosEst"
+                    value={selectedPomosEst}
+                    onChange={handlePomosEstChange}
+                  >
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                    <option value={4}>4</option>
+                    <option value={5}>5</option>
+                    <option value={6}>6</option>
+                    <option value={7}>7</option>
+                    <option value={8}>8</option>
+                    <option value={9}>9</option>
+                    <option value={10}>10</option>
+                  </Form.Select>
+                </Form.Group>
+                <Button className="col" variant="light" onClick={addTask}>
+                  <FaSave /> Save Task
+                </Button>
+              </div>
             </Form>
           </Card>
         )}
@@ -818,7 +820,9 @@ const PomodoroTimer: React.FC = () => {
               </h5>
               <div
                 className="p-2 mb-2 rounded text-dark"
-                style={{ backgroundColor: "#FDE9D8" }}
+                style={{
+                  backgroundColor: mode !== "pomodoro" ? "#FFFFE0" : "",
+                }}
               >
                 {t.notes}
               </div>
