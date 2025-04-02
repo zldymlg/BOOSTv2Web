@@ -1,22 +1,55 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
-import { FaFacebookSquare } from "react-icons/fa";
-import { auth, provider, signInWithPopup } from "../firebasegmail";
 import "./LoginSecurity.css";
+import { signInWithPopup, deleteUser } from "firebase/auth";
+import { auth, facebookProvider, googleProvider } from "./FirebaseConfig";
+import { User } from "firebase/auth";
 
 export default function LogSec() {
   const [showInput, setShowInput] = useState(false);
-  const navigate = useNavigate(); 
+  const [user, setUser] = useState<User | null>(null);
 
-  const handleGoogleLogin = async () => {
+  // Facebook Login
+  const handleFacebookLogin = () => {
+    signInWithPopup(auth, facebookProvider)
+      .then((result) => {
+        setUser(result.user);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  // Google Login
+  const handleGoogleLogin = () => {
+    signInWithPopup(auth, googleProvider)
+      .then((result) => {
+        setUser(result.user);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  // Account Deletion Function
+  const handleDeleteAccount = async () => {
+    if (!auth.currentUser) {
+      alert("No user is logged in.");
+      return;
+    }
+  
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This action is irreversible!"
+    );
+  
+    if (!confirmDelete) return;
+  
     try {
-      const result = await signInWithPopup(auth, provider);
-      console.log("User signed in:", result.user);
-      alert('Welcome, ${result.user.displayName}!');
-
-      navigate("/dashboard"); 
+      await deleteUser(auth.currentUser);
+      alert("Your account has been deleted.");
+      setUser(null);
     } catch (error) {
-      console.error("Error signing in:", error);
+      console.error("Error deleting account:", error);
+      alert("Error deleting account. Please log in again and try.");
     }
   };
 
@@ -38,11 +71,7 @@ export default function LogSec() {
             {showInput ? "Confirm" : ""}
           </li>
           {showInput && (
-            <input
-              type="text"
-              className="col-sm-auto"
-              placeholder="Enter text..."
-            />
+            <input type="text" className="col-sm-auto" placeholder="Enter text..." />
           )}
         </div>
         <div className="row pt-2">
@@ -52,19 +81,35 @@ export default function LogSec() {
         <h3>Social Media Login</h3>
         <ul className="row gap-2">
           <li className="w-50 btn">
-            <FaFacebookSquare size="30" />
-            Facebook
+            <button className="btn btn-primary btn-md" onClick={handleFacebookLogin}>
+              Facebook
+            </button>
           </li>
           <li className="w-50 btn">Instagram</li>
-          <li className="w-50 btn" onClick={handleGoogleLogin}>
-            Gmail
+          <li className="w-50 btn">
+            <button className="btn btn-primary btn-md" onClick={handleGoogleLogin}>
+              Google
+            </button>
           </li>
         </ul>
+
+        {user && (
+          <div className="user-info">
+            <p>Welcome, {user.displayName}</p>
+            <p>Email: {user.email}</p>
+          </div>
+        )}
+
         <div className="row gap-5 mt-5">
           <li className="w-50 btn">Download Data</li>
-          <li className="w-50 btn">Account Deletion</li>
+          <li className="w-50 btn">
+            <button className="btn btn-danger btn-md" onClick={handleDeleteAccount}>
+              Delete Account
+            </button>
+          </li>
         </div>
       </div>
     </React.Fragment>
   );
 }
+//LoginSecurity.tsx
