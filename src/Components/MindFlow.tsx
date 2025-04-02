@@ -18,6 +18,15 @@ interface MindFlowProps {
   onBack: () => void;
 }
 
+const MessageModal = ({ message, onClose }: { message: string; onClose: () => void }) => (
+  <div className="message-modal">
+    <div className="message-modal-content">
+      <p>{message}</p>
+      <button onClick={onClose} className="btn">Close</button>
+    </div>
+  </div>
+);
+
 export default function MindFlow({ onBack }: MindFlowProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -25,6 +34,7 @@ export default function MindFlow({ onBack }: MindFlowProps) {
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
   const [editNodeData, setEditNodeData] = useState({
     label: "",
     size: 40,
@@ -84,7 +94,7 @@ export default function MindFlow({ onBack }: MindFlowProps) {
       setEdges((eds) => eds.filter((edge) => edge.source !== selectedNodeId && edge.target !== selectedNodeId));
       setSelectedNodeId(null);
     } else {
-      alert("Please select a node to delete.");
+      setMessage("Please select a node to delete.");
     }
   };
 
@@ -93,7 +103,7 @@ export default function MindFlow({ onBack }: MindFlowProps) {
       setEdges((eds) => eds.filter((edge) => edge.id !== selectedEdgeId));
       setSelectedEdgeId(null);
     } else {
-      alert("Please select an edge to delete.");
+      setMessage("Please select a line to delete.");
     }
   };
 
@@ -103,14 +113,14 @@ export default function MindFlow({ onBack }: MindFlowProps) {
       if (selectedNode) {
         setEditNodeData({
           label: selectedNode.data.label || "",
-          size: selectedNode.style?.width || 40,
+          size: Number (selectedNode.style?.width) || 40,
           color: selectedNode.style?.backgroundColor || "#000000",
           textColor: selectedNode.style?.color || "#000000",
         });
         setIsEditModalOpen(true);
       }
     } else {
-      alert("Please select a node to edit.");
+      setMessage("Please select a node to edit.");
     }
   };
 
@@ -168,7 +178,7 @@ export default function MindFlow({ onBack }: MindFlowProps) {
           onEdgeClick={onEdgeClick}
           fitView
           defaultEdgeOptions={{
-            style: { strokeWidth: 10 },
+            style: { strokeWidth: 15 },
           }}
         >
           <Controls />
@@ -247,6 +257,8 @@ export default function MindFlow({ onBack }: MindFlowProps) {
           <button onClick={() => setIsEditModalOpen(false)} className="btn">Cancel</button>
         </div>
       )}
+
+      {message && <MessageModal message={message} onClose={() => setMessage(null)} />}
     </React.Fragment>
   );
 }
