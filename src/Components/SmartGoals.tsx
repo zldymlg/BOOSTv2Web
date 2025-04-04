@@ -126,7 +126,7 @@ export default function SmartGoals(OnBack: SmartGoalProps) {
         <div className="flex-header">
           <IoIosArrowBack className="back-btn text-black" size={30} onClick={onBack}/>
           <span className="title">SMART goals</span>
-          <Save className="save-btn w-4 h-4 text-black" size={30} />
+          <Save className="save-btn text-black" size={40} />
         </div>
 
         {["specific", "measurable", "achievable", "relevant", "timeBound"].map(
