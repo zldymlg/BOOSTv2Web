@@ -7,7 +7,7 @@ import {
   firestore,
   sendEmailVerification,
 } from "./firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import TermsPolicy from "./Components/TermsPolicy";
 import "bootstrap/dist/css/bootstrap.css";
 import "/src/Signup.css";
@@ -77,6 +77,7 @@ const Signup: React.FC = () => {
   };
 
   // Handle Sign Up
+  // Handle Sign Up
   const handleSignup = async () => {
     setLoading(true); // Set loading to true
     setError(""); // Clear previous errors
@@ -88,14 +89,14 @@ const Signup: React.FC = () => {
       !userInfo.confirmPassword
     ) {
       setError("All fields are required.");
-      setLoading(false); // Set loading to false
+      setLoading(false);
       return;
     }
 
     // Check if passwords match
     if (userInfo.password !== userInfo.confirmPassword) {
       setError("Passwords do not match.");
-      setLoading(false); // Set loading to false
+      setLoading(false);
       return;
     }
 
@@ -110,36 +111,59 @@ const Signup: React.FC = () => {
       // Send email verification
       await sendEmailVerification(user);
 
+      // Save user data to Firestore, including firstName
       await setDoc(doc(firestore, "users", user.uid), {
-        name: userInfo.name,
+        name: userInfo.name.trim(),
+        firstName: userInfo.name.trim().split(" ")[0],
         email: userInfo.email,
         emailVerified: false,
+        exp: 0,
         createdAt: new Date(),
       });
 
       alert(
         "Signup successful! A verification email has been sent. Please verify your email address before logging in."
       );
-      navigate("/"); // Redirect using useNavigate
+      navigate("/signup"); // Redirect using useNavigate
     } catch (err: any) {
       setError(err.message);
     } finally {
-      setLoading(false); // Set loading to false in finally block
+      setLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError("");
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
+      const userRef = doc(firestore, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          name: user.displayName || "Anonymous",
+          firstName: (user.displayName || "Anonymous").split(" ")[0],
+          email: user.email || "",
+          emailVerified: false,
+          exp: 0,
+          createdAt: new Date(),
+        });
+      }
+      await sendEmailVerification(user);
+
       alert(
-        `Welcome, ${user.displayName || "User"}! Redirecting to dashboard...`
+        "Signup successful! A verification email has been sent. Please verify your email address before logging in."
       );
-      navigate("/dashboard"); // Use navigate instead of window.location
+      navigate("/");
     } catch (error) {
       console.error("Google Sign-In Error:", error);
       setError("Google Sign-In failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import "./Pomodoro.css";
 import { firestore, auth } from "../firebase";
+
 import {
   collection,
   doc,
@@ -21,7 +22,8 @@ import {
   updateDoc,
   deleteDoc,
   serverTimestamp,
-  setDoc,
+  getDocs,
+  increment,
 } from "firebase/firestore";
 
 interface Task {
@@ -51,10 +53,11 @@ const PomodoroTimer: React.FC = () => {
   const backgroundMusics = ["Time Ticking", "Rainy", "Cozy"];
   const [timeLeft, setTimeLeft] = useState(
     parseInt(localStorage.getItem("timeLeft") || `${25 * 60}`, 10)
-  ); 
+  );
   const [isRunning, setIsRunning] = useState(
     JSON.parse(localStorage.getItem("isRunning") || "false")
-  ); 
+  );
+
   const [mode, setMode] = useState(localStorage.getItem("mode") || "pomodoro"); //Load mode from localStorage
   const [showStartWarning, setShowStartWarning] = useState(false);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
@@ -138,6 +141,7 @@ const PomodoroTimer: React.FC = () => {
       }
     }
   };
+
   const updateTaskCompletion = async (
     tasks: Task[],
     setTasks: React.Dispatch<React.SetStateAction<Task[]>>,
@@ -158,26 +162,15 @@ const PomodoroTimer: React.FC = () => {
       return;
     }
 
+    // Optimistic update: Update the state immediately
     currentTask.pomodorosCompleted++;
-
     if (currentTask.pomodorosCompleted >= currentTask.pomosEst) {
       currentTask.completed = true;
     }
-
-    // Calculate EXP based on task duration
-    let taskDuration = currentTask.pomosEst * 5; // Assuming each Pomodoro is 5 minutes
-    let expEarned = 0;
-
-    if (taskDuration >= 2 && taskDuration <= 10) {
-      expEarned = 3;
-    } else if (taskDuration > 10 && taskDuration <= 15) {
-      expEarned = 5;
-    } else if (taskDuration > 15) {
-      expEarned = 7;
-    }
+    setTasks(updatedTasks);
 
     try {
-      // Update the task in Firestore
+      // Update task document in Firestore
       const taskRef = doc(
         firestore,
         "users",
@@ -190,19 +183,43 @@ const PomodoroTimer: React.FC = () => {
         completed: currentTask.completed,
       });
 
-      // Add experience points to the Exp subcollection
-      const expRef = doc(collection(firestore, "users"));
-      await setDoc(expRef, {
-        taskId: currentTask.id,
-        exp: expEarned,
-        timestamp: serverTimestamp(), // Optional: Add timestamp for when the EXP was earned
-      });
+      // Calculate EXP based on task duration
+      const taskDuration = currentTask.pomosEst * 5;
+      let expEarned = 0;
+
+      if (taskDuration >= 2 && taskDuration <= 10) {
+        expEarned = 10;
+      } else if (taskDuration > 10 && taskDuration <= 15) {
+        expEarned = 15;
+      } else if (taskDuration > 15) {
+        expEarned = 30;
+      }
+
+      // Get the first document in the exp subcollection
+      const expCollectionRef = collection(firestore, "users", userId, "exp");
+      const expSnapshot = await getDocs(expCollectionRef);
+
+      if (!expSnapshot.empty) {
+        const firstDoc = expSnapshot.docs[0];
+        const expDocRef = doc(firestore, "users", userId, "exp");
+
+        // Increment exp
+        await updateDoc(expDocRef, {
+          exp: increment(expEarned),
+        });
+      } else {
+        console.warn("No existing EXP document found for user.");
+      }
     } catch (error) {
-      console.error("Error updating task:", error);
+      console.error("Error updating task or EXP:", error);
+      // Rollback optimistic update if the write fails
+      setTasks((prevTasks) =>
+        prevTasks.map((t) =>
+          t.id === currentTask.id ? { ...t, completed: false } : t
+        )
+      );
     }
 
-    // Update the state without removing completed tasks
-    setTasks(updatedTasks);
     setTasksCompletedToday((prev) => prev + 1);
   };
 
@@ -261,14 +278,27 @@ const PomodoroTimer: React.FC = () => {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
+      if (isRunning) {
+        window.addEventListener("beforeunload", handleTabSwitch);
+      } else {
+        window.removeEventListener("beforeunload", handleTabSwitch);
+      }
     }
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+        window.removeEventListener("beforeunload", handleTabSwitch);
       }
     };
   }, [isRunning, timeLeft]);
 
+  const handleTabSwitch = (event: BeforeUnloadEvent) => {
+    if (isRunning) {
+      // Display a confirmation dialog
+      event.returnValue =
+        "Are you sure you want to leave? The timer is still running.";
+    }
+  };
   useEffect(() => {
     return () => stopBackgroundMusic();
   }, [backgroundMusic]);
