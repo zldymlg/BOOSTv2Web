@@ -71,6 +71,9 @@ export default function MindFlow({ onBack }: MindFlowProps) {
     [setEdges]
   );
 
+  const isMobile = window.innerWidth <= 768;
+  const connectorStrokeWidth = isMobile ? 40 : 20;
+
   const addNode = () => {
     setNewNodeData({
       label: "",
@@ -188,11 +191,17 @@ export default function MindFlow({ onBack }: MindFlowProps) {
 
   return (
     <React.Fragment>
-      <div className="mindflow-container">
-        <IoIosArrowBack size={30} onClick={onBack} style={{ cursor: "pointer" }} />
-        <span id="title">Mind Map</span>
-        <Save size={30} />
+      {/* Updated Header Section */}
+      <div className="header-container d-flex align-items-center justify-content-between p-3">
+        <IoIosArrowBack
+          size={30}
+          onClick={onBack}
+          style={{ cursor: "pointer" }}
+        />
+        <h2 className="text-center flex-grow-1 m-0">Mind Map</h2>
+        <Save size={30} style={{ cursor: "pointer" }}  />
       </div>
+
       <div id="flow">
         <ReactFlow
           nodes={nodes}
@@ -204,7 +213,7 @@ export default function MindFlow({ onBack }: MindFlowProps) {
           onEdgeClick={onEdgeClick}
           fitView
           defaultEdgeOptions={{
-            style: { strokeWidth: 15 },
+            style: { strokeWidth: connectorStrokeWidth },
           }}
         >
           <Controls />
