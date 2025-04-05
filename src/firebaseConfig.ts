@@ -1,21 +1,26 @@
-// Import Firebase dependencies
+import { FacebookAuthProvider, GoogleAuthProvider, getAuth } from "firebase/auth"; 
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { getAnalytics } from "firebase/analytics";
 
-
-// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAWS83pmNe24QVHEzic5NVdEcp6ALMAxAw",
   authDomain: "boost-web-7bdee.firebaseapp.com",
+  databaseURL: "https://boost-web-7bdee-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "boost-web-7bdee",
   storageBucket: "boost-web-7bdee.firebasestorage.app",
   messagingSenderId: "505760140190",
   appId: "1:505760140190:web:4ef77d785574cef8e4648f",
-  measurementId: "G-10KCBG8PTD",
+  measurementId: "G-10KCBG8PTD"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const analytics = getAnalytics(app);
+const auth = getAuth(app); 
+
+// Use different names for providers
+const facebookProvider = new FacebookAuthProvider();
 const googleProvider = new GoogleAuthProvider();
 
-export { auth, createUserWithEmailAndPassword, signInWithPopup, googleProvider };
+export { auth, facebookProvider, googleProvider }; 
+//FirebaseConfig.ts

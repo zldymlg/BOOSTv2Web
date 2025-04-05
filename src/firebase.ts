@@ -17,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const firestore = getFirestore(app);
-const db = getFirestore(app); // ✅ Changed from `firestore` to `db`
+const db = getFirestore(app); // ✅ Changed from firestore to db
 const googleProvider = new GoogleAuthProvider();
 export { auth,db, firestore, googleProvider, createUserWithEmailAndPassword, signInWithPopup, firebaseConfig };
+//firebase.ts
