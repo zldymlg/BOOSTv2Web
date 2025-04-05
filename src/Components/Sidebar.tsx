@@ -14,7 +14,9 @@ import { FiMenu, FiChevronUp } from "react-icons/fi";
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth <= 768);
-  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("activeTab") || "Dashboard";
+  });
 
   const menuItems = [
     {
@@ -54,6 +56,10 @@ export default function Sidebar() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("activeTab", activeTab);
+  }, [activeTab]);
 
   return (
     <div className="app-container">
