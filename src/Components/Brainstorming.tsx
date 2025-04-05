@@ -15,9 +15,7 @@ import {
 import SmartGoals from "./SmartGoals";
 import Mindmap from "./Mindmap";
 import MindFlow from "./MindFlow";
-import { BsSearch } from "react-icons/bs";
 import "./SmartGoals.css";
-import ExpBar from "./exp-notif-cal.tsx";
 
 export default function Brainstorming() {
   const [activeComponent, setActiveComponent] = useState("brainstorming");
