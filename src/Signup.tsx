@@ -5,6 +5,7 @@ import {
   signInWithPopup,
   googleProvider,
   firestore,
+  sendEmailVerification,
 } from "./firebase";
 import { doc, setDoc } from "firebase/firestore";
 import TermsPolicy from "./Components/TermsPolicy";
@@ -12,6 +13,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import "/src/Signup.css";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 interface UserInfo {
   name: string;
@@ -20,20 +22,6 @@ interface UserInfo {
   confirmPassword: string;
 }
 
-const handleGoogleSignIn = async () => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-
-    alert(
-      `Welcome, ${user.displayName || "User"}! Redirecting to dashboard...`
-    );
-    window.location.href = "/dashboard.html";
-  } catch (error) {
-    console.error("Google Sign-In Error:", error);
-    setError("Google Sign-In failed. Please try again.");
-  }
-};
 const restrictedUsernames = [
   "admin",
   "support",
@@ -46,10 +34,12 @@ const restrictedUsernames = [
 ];
 
 const Signup: React.FC = () => {
+  const navigate = useNavigate(); // Initialize useNavigate
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const [termsChecked, setTermsChecked] = useState<boolean>(false);
   const [showTerms, setShowTerms] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState(false); // Add loading state
 
   // State for user input
   const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -61,11 +51,36 @@ const Signup: React.FC = () => {
 
   // Handle input change
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "name") {
+      const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+
+      if (!usernameRegex.test(value) && value !== "") {
+        setError(
+          "Username must be 3-20 characters and contain only letters, numbers, and underscores."
+        );
+        return;
+      }
+
+      if (restrictedUsernames.includes(value.toLowerCase())) {
+        setError(
+          "This username is not allowed. Please choose a different one."
+        );
+        return;
+      }
+
+      setError("");
+    }
+
+    setUserInfo({ ...userInfo, [name]: value });
   };
 
   // Handle Sign Up
   const handleSignup = async () => {
+    setLoading(true); // Set loading to true
+    setError(""); // Clear previous errors
+
     if (
       !userInfo.email ||
       !userInfo.password ||
@@ -73,12 +88,14 @@ const Signup: React.FC = () => {
       !userInfo.confirmPassword
     ) {
       setError("All fields are required.");
+      setLoading(false); // Set loading to false
       return;
     }
 
     // Check if passwords match
     if (userInfo.password !== userInfo.confirmPassword) {
       setError("Passwords do not match.");
+      setLoading(false); // Set loading to false
       return;
     }
 
@@ -90,42 +107,40 @@ const Signup: React.FC = () => {
       );
       const user = userCredential.user;
 
+      // Send email verification
+      await sendEmailVerification(user);
+
       await setDoc(doc(firestore, "users", user.uid), {
         name: userInfo.name,
         email: userInfo.email,
+        emailVerified: false,
         createdAt: new Date(),
       });
 
-      alert("Signup successful! Redirecting to dashboard...");
-      window.location.href = "/dashboard.html";
+      alert(
+        "Signup successful! A verification email has been sent. Please verify your email address before logging in."
+      );
+      navigate("/"); // Redirect using useNavigate
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setLoading(false); // Set loading to false in finally block
     }
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-      const { name, value } = e.target;
+  };
 
-      if (name === "name") {
-        const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
 
-        if (!usernameRegex.test(value) && value !== "") {
-          setError(
-            "Username must be 3-20 characters and contain only letters, numbers, and underscores."
-          );
-          return;
-        }
-
-        if (restrictedUsernames.includes(value.toLowerCase())) {
-          setError(
-            "This username is not allowed. Please choose a different one."
-          );
-          return;
-        }
-
-        setError("");
-      }
-
-      setUserInfo({ ...userInfo, [name]: value });
-    };
+      alert(
+        `Welcome, ${user.displayName || "User"}! Redirecting to dashboard...`
+      );
+      navigate("/dashboard"); // Use navigate instead of window.location
+    } catch (error) {
+      console.error("Google Sign-In Error:", error);
+      setError("Google Sign-In failed. Please try again.");
+    }
   };
 
   return (
@@ -245,14 +260,14 @@ const Signup: React.FC = () => {
           <motion.button
             id="login-btn"
             className="rounded p-2 mt-2 border-0"
-            disabled={!termsChecked}
+            disabled={!termsChecked || loading} // Disable button while loading
             style={{
               cursor: termsChecked ? "pointer" : "not-allowed",
-              opacity: termsChecked ? 1 : 0.6,
+              opacity: termsChecked && !loading ? 1 : 0.6, // Adjust opacity based on loading
             }}
             onClick={handleSignup}
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"} {/* Show loading message */}
           </motion.button>
 
           <div className="line-container mt-3 mb-3">
@@ -306,6 +321,3 @@ const Signup: React.FC = () => {
 };
 
 export default Signup;
-function setError(arg0: string) {
-  throw new Error("Function not implemented.");
-}

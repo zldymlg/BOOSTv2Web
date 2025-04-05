@@ -17,11 +17,19 @@ interface MindFlowProps {
   onBack: () => void;
 }
 
-const MessageModal = ({ message, onClose }: { message: string; onClose: () => void }) => (
+const MessageModal = ({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) => (
   <div className="message-modal">
     <div className="message-modal-content">
       <p>{message}</p>
-      <button onClick={onClose} className="btn">Close</button>
+      <button onClick={onClose} className="btn">
+        Close
+      </button>
     </div>
   </div>
 );
@@ -115,7 +123,12 @@ export default function MindFlow({ onBack }: MindFlowProps) {
         return;
       }
       setNodes((nds) => nds.filter((node) => node.id !== selectedNodeId));
-      setEdges((eds) => eds.filter((edge) => edge.source !== selectedNodeId && edge.target !== selectedNodeId));
+      setEdges((eds) =>
+        eds.filter(
+          (edge) =>
+            edge.source !== selectedNodeId && edge.target !== selectedNodeId
+        )
+      );
       setSelectedNodeId(null);
     } else {
       setMessage("Please select a node to delete.");
@@ -189,7 +202,11 @@ export default function MindFlow({ onBack }: MindFlowProps) {
   return (
     <React.Fragment>
       <div className="mindflow-container">
-        <IoIosArrowBack size={30} onClick={onBack} style={{ cursor: "pointer" }} />
+        <IoIosArrowBack
+          size={30}
+          onClick={onBack}
+          style={{ cursor: "pointer" }}
+        />
         <span id="title">Mind Map</span>
         <Save size={30} />
       </div>
@@ -212,12 +229,22 @@ export default function MindFlow({ onBack }: MindFlowProps) {
         </ReactFlow>
       </div>
       <div
-        className={`add-node-container ${isAddModalOpen || isEditModalOpen ? "hidden" : ""}`}
+        className={`add-node-container ${
+          isAddModalOpen || isEditModalOpen ? "hidden" : ""
+        }`}
       >
-        <button onClick={addNode} className="btn">Add Node</button>
-        <button onClick={deleteNode} className="btn">Delete Node</button>
-        <button onClick={editNode} className="btn">Edit Node</button>
-        <button onClick={deleteEdge} className="btn">Delete Line</button>
+        <button onClick={addNode} className="btn">
+          Add Node
+        </button>
+        <button onClick={deleteNode} className="btn">
+          Delete Node
+        </button>
+        <button onClick={editNode} className="btn">
+          Edit Node
+        </button>
+        <button onClick={deleteEdge} className="btn">
+          Delete Line
+        </button>
       </div>
 
       {isAddModalOpen && (
@@ -228,7 +255,9 @@ export default function MindFlow({ onBack }: MindFlowProps) {
             <input
               type="text"
               value={newNodeData.label}
-              onChange={(e) => setNewNodeData({ ...newNodeData, label: e.target.value })}
+              onChange={(e) =>
+                setNewNodeData({ ...newNodeData, label: e.target.value })
+              }
             />
           </label>
           <label>
@@ -236,7 +265,9 @@ export default function MindFlow({ onBack }: MindFlowProps) {
             <input
               type="color"
               value={newNodeData.color}
-              onChange={(e) => setNewNodeData({ ...newNodeData, color: e.target.value })}
+              onChange={(e) =>
+                setNewNodeData({ ...newNodeData, color: e.target.value })
+              }
             />
           </label>
           <label>
@@ -244,11 +275,17 @@ export default function MindFlow({ onBack }: MindFlowProps) {
             <input
               type="color"
               value={newNodeData.textColor}
-              onChange={(e) => setNewNodeData({ ...newNodeData, textColor: e.target.value })}
+              onChange={(e) =>
+                setNewNodeData({ ...newNodeData, textColor: e.target.value })
+              }
             />
           </label>
-          <button onClick={handleAddSubmit} className="btn">Add</button>
-          <button onClick={() => setIsAddModalOpen(false)} className="btn">Cancel</button>
+          <button onClick={handleAddSubmit} className="btn">
+            Add
+          </button>
+          <button onClick={() => setIsAddModalOpen(false)} className="btn">
+            Cancel
+          </button>
         </div>
       )}
 
@@ -260,7 +297,9 @@ export default function MindFlow({ onBack }: MindFlowProps) {
             <input
               type="text"
               value={editNodeData.label}
-              onChange={(e) => setEditNodeData({ ...editNodeData, label: e.target.value })}
+              onChange={(e) =>
+                setEditNodeData({ ...editNodeData, label: e.target.value })
+              }
             />
           </label>
           <label>
@@ -268,7 +307,9 @@ export default function MindFlow({ onBack }: MindFlowProps) {
             <input
               type="color"
               value={editNodeData.color}
-              onChange={(e) => setEditNodeData({ ...editNodeData, color: e.target.value })}
+              onChange={(e) =>
+                setEditNodeData({ ...editNodeData, color: e.target.value })
+              }
             />
           </label>
           <label>
@@ -276,15 +317,23 @@ export default function MindFlow({ onBack }: MindFlowProps) {
             <input
               type="color"
               value={editNodeData.textColor}
-              onChange={(e) => setEditNodeData({ ...editNodeData, textColor: e.target.value })}
+              onChange={(e) =>
+                setEditNodeData({ ...editNodeData, textColor: e.target.value })
+              }
             />
           </label>
-          <button onClick={handleEditSubmit} className="btn">Save</button>
-          <button onClick={() => setIsEditModalOpen(false)} className="btn">Cancel</button>
+          <button onClick={handleEditSubmit} className="btn">
+            Save
+          </button>
+          <button onClick={() => setIsEditModalOpen(false)} className="btn">
+            Cancel
+          </button>
         </div>
       )}
 
-      {message && <MessageModal message={message} onClose={() => setMessage(null)} />}
+      {message && (
+        <MessageModal message={message} onClose={() => setMessage(null)} />
+      )}
     </React.Fragment>
   );
 }
