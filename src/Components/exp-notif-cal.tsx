@@ -23,10 +23,11 @@ export default function ExpNotifCal() {
             const userData = docSnap.data();
             const currentExp = userData.exp || 0;
             const currentLevel = Math.floor(currentExp / 100); // Level based on every 100 XP
-            const remainingXp = currentExp % 100; // The remaining XP after calculating the level
+            const tensPlaceXp = Math.floor(currentExp / 10) * 10; // Get the tens place
+            const remainingXp = currentExp % 10; // The remaining XP after calculating tens place
             setExp(currentExp);
             setLevel(currentLevel);
-            setXp(`${remainingXp}/100XP`); // Show the remaining XP
+            setXp(`${remainingXp}/10XP`); // Show the remaining XP based on the tens place
           }
         }
       } catch (error) {
@@ -43,11 +44,16 @@ export default function ExpNotifCal() {
         <div className="exp-container pt-5 pb-5">
           <div className="exp-content">
             <span className="level-text">Level: {level}</span>
-            <progress className="exp-bar" value={exp || 0} max={100}></progress>
+            <progress
+              className="exp-bar"
+              value={exp ? exp % 10 : 0}
+              max={100}
+            ></progress>{" "}
+            {/* Adjusting progress for tens place */}
             <span className="xp-text">{xp}</span>
           </div>
           <div className="icons">
-            <FaCalendarAlt className="icon" size={22} />
+            <FaCalendarAlt className="icon mx-4" size={22} />
             <FaBell className="icon notif" size={22} />
           </div>
         </div>
