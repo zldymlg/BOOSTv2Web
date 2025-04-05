@@ -1,17 +1,23 @@
 #custom-line1 {
   stroke: #5030E5;
-  stroke-width: 5
+  stroke-width: 3
 }
 
 #custom-line2 {
 
   stroke: #FFCE1B;
-  stroke-width: 5
+  stroke-width: 3
 }
 
 #custom-line3 {
   stroke: #65713F;
-  stroke-width: 5
+  stroke-width: 3
+}
+
+#calendar-icon {
+  background-color: black;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .task-card {
@@ -33,11 +39,9 @@
 
 .task-column {
   flex: 1;
-  background-color: #f4f4f4;
+  background-color: #f0f0f0;
   padding: 20px;
   border-radius: 8px;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .task-column h3 {
