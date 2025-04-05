@@ -51,10 +51,10 @@ const PomodoroTimer: React.FC = () => {
   const backgroundMusics = ["Time Ticking", "Rainy", "Cozy"];
   const [timeLeft, setTimeLeft] = useState(
     parseInt(localStorage.getItem("timeLeft") || `${25 * 60}`, 10)
-  ); // Load timeLeft from localStorage
+  ); 
   const [isRunning, setIsRunning] = useState(
     JSON.parse(localStorage.getItem("isRunning") || "false")
-  ); // Load isRunning from localStorage
+  ); 
   const [mode, setMode] = useState(localStorage.getItem("mode") || "pomodoro"); //Load mode from localStorage
   const [showStartWarning, setShowStartWarning] = useState(false);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);

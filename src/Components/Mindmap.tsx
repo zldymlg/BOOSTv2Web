@@ -79,6 +79,9 @@ export default function MindFlow({ onBack }: MindFlowProps) {
     [setEdges]
   );
 
+  const isMobile = window.innerWidth <= 768;
+  const connectorStrokeWidth = isMobile ? 40 : 20;
+
   const addNode = () => {
     setNewNodeData({
       label: "",
@@ -210,6 +213,7 @@ export default function MindFlow({ onBack }: MindFlowProps) {
         <span id="title">Mind Map</span>
         <Save size={30} />
       </div>
+
       <div id="flow">
         <ReactFlow
           nodes={nodes}
@@ -221,7 +225,7 @@ export default function MindFlow({ onBack }: MindFlowProps) {
           onEdgeClick={onEdgeClick}
           fitView
           defaultEdgeOptions={{
-            style: { strokeWidth: 15 },
+            style: { strokeWidth: connectorStrokeWidth },
           }}
         >
           <Controls />
