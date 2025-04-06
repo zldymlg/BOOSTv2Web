@@ -45,6 +45,7 @@ function AddGoalModal({ isOpen, onClose, onSave, category, goalToEdit, onEdit })
           {goalToEdit ? "Edit Goal" : `New Goal for "${category.charAt(0).toUpperCase() + category.slice(1)}"`}
         </h2>
         <label>
+          Goal:
           <input
             type="text"
             value={goal}
@@ -76,6 +77,25 @@ function AddGoalModal({ isOpen, onClose, onSave, category, goalToEdit, onEdit })
   );
 }
 
+function SaveModal({ isOpen, onClose }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content bg-light">
+        <h2>Save SMART Goals</h2>
+        <label>
+          Name:
+        <input type="text"></input>
+        </label>
+        <div className="modal-buttons">
+          <button className="btn" onClick={onClose}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SmartGoals(OnBack: SmartGoalProps) {
   const { onBack } = OnBack;
   const [goals, setGoals] = useState({
@@ -89,6 +109,7 @@ export default function SmartGoals(OnBack: SmartGoalProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentCategory, setCurrentCategory] = useState("");
   const [goalToEdit, setGoalToEdit] = useState(null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   const openModal = (category, goal = null) => {
     setCurrentCategory(category);
@@ -124,9 +145,9 @@ export default function SmartGoals(OnBack: SmartGoalProps) {
     <React.Fragment>
       <div className="smart-goals-container">
         <div className="flex-header">
-          <IoIosArrowBack className="back-btn text-black" size={30} onClick={onBack}/>
+          <IoIosArrowBack className="back-btn text-black" size={30} onClick={onBack} />
           <span className="title">SMART goals</span>
-          <Save className="save text-black" size={30} />
+          <Save className="save text-black" size={30} onClick={() => setShowSaveModal(true)} />
         </div>
 
         {["specific", "measurable", "achievable", "relevant", "timeBound"].map(
@@ -152,18 +173,15 @@ export default function SmartGoals(OnBack: SmartGoalProps) {
                   >
                     {goal.goal}
                     <FaEdit
-                      id="edit"
+                      className="edit-icon"
                       size={20}
                       onClick={() => openModal(category, goal)}
                     />
-                      
-                    
                     <MdDelete
-                      id="delete"
+                      className="delete-icon"
                       size={20}
                       onClick={() => deleteGoal(category, goal)}
                     />
-                    
                   </div>
                 ))}
               </div>
@@ -180,6 +198,8 @@ export default function SmartGoals(OnBack: SmartGoalProps) {
         category={currentCategory}
         goalToEdit={goalToEdit}
       />
+
+      <SaveModal isOpen={showSaveModal} onClose={() => setShowSaveModal(false)} />
     </React.Fragment>
   );
 }
