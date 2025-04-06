@@ -22,8 +22,7 @@ import {
   updateDoc,
   deleteDoc,
   serverTimestamp,
-  getDocs,
-  increment,
+  getDoc,
 } from "firebase/firestore";
 
 interface Task {
@@ -195,20 +194,24 @@ const PomodoroTimer: React.FC = () => {
         expEarned = 30;
       }
 
-      // Get the first document in the exp subcollection
-      const expCollectionRef = collection(firestore, "users", userId, "exp");
-      const expSnapshot = await getDocs(expCollectionRef);
+      // Reference the user's document and the exp field within it
+      const userDocRef = doc(firestore, "users", userId);
 
-      if (!expSnapshot.empty) {
-        const firstDoc = expSnapshot.docs[0];
-        const expDocRef = doc(firestore, "users", userId, "exp");
+      // Get the current EXP value from the user document
+      const userDocSnapshot = await getDoc(userDocRef);
 
-        // Increment exp
-        await updateDoc(expDocRef, {
-          exp: increment(expEarned),
+      if (userDocSnapshot.exists()) {
+        const currentExp = userDocSnapshot.data()?.exp || 0;
+
+        // Add the new EXP earned to the current EXP
+        const updatedExp = currentExp + expEarned;
+
+        // Update the EXP field within the user's document
+        await updateDoc(userDocRef, {
+          exp: updatedExp,
         });
       } else {
-        console.warn("No existing EXP document found for user.");
+        console.warn("User document not found.");
       }
     } catch (error) {
       console.error("Error updating task or EXP:", error);
@@ -223,8 +226,13 @@ const PomodoroTimer: React.FC = () => {
     setTasksCompletedToday((prev) => prev + 1);
   };
 
-  const stopTimer = () => {
+  const stopTimer = (currentTask: Task | null) => {
     setIsRunning(false);
+
+    if (currentTask?.completed) {
+      console.log("Task completed, stopping the timer.");
+    }
+
     if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
@@ -345,8 +353,8 @@ const PomodoroTimer: React.FC = () => {
 
     setTimeout(() => {
       newRingtonePlayer.pause();
-      newRingtonePlayer.currentTime = 0;
-    }, 3000);
+      newRingtonePlayer.currentTime = 1000;
+    }, 9000);
   };
 
   const getCurrentSessionDuration = () => {
@@ -837,7 +845,7 @@ const PomodoroTimer: React.FC = () => {
               mode === "longBreak" || mode === "shortBreak"
                 ? "bg-warning"
                 : "bg-success"
-            }`}
+            } `}
           >
             <Form>
               <Form.Group>
@@ -924,15 +932,13 @@ const PomodoroTimer: React.FC = () => {
           .map((t, index) => (
             <Card
               key={t.id}
-              className={`mt-3 p-3 rounded d-flex flex-row align-items-start bg-success shadow text-start ${
+              className={`mt-3 p-3 rounded d-flex flex-row align-items-start bg-success shadow text-start  ${
                 mode === "longBreak" || mode === "shortBreak"
                   ? "bg-warning"
                   : "bg-success"
-              }`}
+              } `}
               style={{
                 color: "white",
-                textDecoration: t.completed ? "line-through" : "none", // Strikethrough completed tasks
-                opacity: t.completed ? 0.6 : 1, // Lower opacity for completed tasks
               }}
               id="bg-success"
             >
