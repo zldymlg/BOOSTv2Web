@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import "./LoginSecurity.css";
 import { signInWithPopup, deleteUser } from "firebase/auth";
-import { auth, facebookProvider, googleProvider } from "./FirebaseConfig";
+import { auth, facebookProvider, googleProvider } from "../firebase";
+// note: connect the facebook provider
 import { User } from "firebase/auth";
 
 export default function LogSec() {
@@ -36,13 +37,13 @@ export default function LogSec() {
       alert("No user is logged in.");
       return;
     }
-  
+
     const confirmDelete = window.confirm(
       "Are you sure you want to delete your account? This action is irreversible!"
     );
-  
+
     if (!confirmDelete) return;
-  
+
     try {
       await deleteUser(auth.currentUser);
       alert("Your account has been deleted.");
@@ -71,7 +72,11 @@ export default function LogSec() {
             {showInput ? "Confirm" : ""}
           </li>
           {showInput && (
-            <input type="text" className="col-sm-auto" placeholder="Enter text..." />
+            <input
+              type="text"
+              className="col-sm-auto"
+              placeholder="Enter text..."
+            />
           )}
         </div>
         <div className="row pt-2">
@@ -81,13 +86,19 @@ export default function LogSec() {
         <h3>Social Media Login</h3>
         <ul className="row gap-2">
           <li className="w-50 btn">
-            <button className="btn btn-primary btn-md" onClick={handleFacebookLogin}>
+            <button
+              className="btn btn-primary btn-md"
+              onClick={handleFacebookLogin}
+            >
               Facebook
             </button>
           </li>
           <li className="w-50 btn">Instagram</li>
           <li className="w-50 btn">
-            <button className="btn btn-primary btn-md" onClick={handleGoogleLogin}>
+            <button
+              className="btn btn-primary btn-md"
+              onClick={handleGoogleLogin}
+            >
               Google
             </button>
           </li>
@@ -103,7 +114,10 @@ export default function LogSec() {
         <div className="row gap-5 mt-5">
           <li className="w-50 btn">Download Data</li>
           <li className="w-50 btn">
-            <button className="btn btn-danger btn-md" onClick={handleDeleteAccount}>
+            <button
+              className="btn btn-danger btn-md"
+              onClick={handleDeleteAccount}
+            >
               Delete Account
             </button>
           </li>

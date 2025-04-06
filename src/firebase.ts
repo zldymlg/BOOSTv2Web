@@ -1,8 +1,9 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithPopup, sendEmailVerification } from "firebase/auth";
+import { FacebookAuthProvider } from "firebase/auth/web-extension";
 import { getFirestore } from "firebase/firestore";
 
-
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAWS83pmNe24QVHEzic5NVdEcp6ALMAxAw",
   authDomain: "boost-web-7bdee.firebaseapp.com",
@@ -15,8 +16,10 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
 const firestore = getFirestore(app);
-const db = getFirestore(app); // ✅ Changed from `firestore` to `db`
+const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
-export { auth,db, firestore, googleProvider, createUserWithEmailAndPassword, signInWithPopup, firebaseConfig };
+const facebookProvider = new FacebookAuthProvider();
+export { auth, db, firestore, googleProvider, facebookProvider, createUserWithEmailAndPassword, signInWithPopup, sendEmailVerification, firebaseConfig };

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Button, Modal, Form, FormCheck } from "react-bootstrap";
-import { BsThreeDots } from "react-icons/bs";
 import "./ToDoList.css";
 import { db, auth } from "../firebase";
 import {
@@ -22,6 +21,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { v4 as uuidv4 } from "uuid";
 import ExpBar from "./exp-notif-cal.tsx";
+import { FaEdit } from "react-icons/fa";
+import { MdDelete } from "react-icons/md";
+import { FaCalendarAlt } from "react-icons/fa";
 
 interface Task {
   id: string;
@@ -229,11 +231,16 @@ const FcTodoList: React.FC = () => {
   };
 
   const renderTaskCard = (task: Task) => (
-    <div className="col-sm-auto" key={task.id}>
-      <div className="card ms-3 p-3" style={{ width: "22rem" }}>
-        <div className="d-flex justify-content-between align-items-center">
-          <span className="badge bg-success">{task.timeLeft}</span>
-          <button className="btn btn-light border-0">...</button>
+    <div className="pb-3" key={task.id}>
+      <div className="card p-3" style={{ width: "22rem" }}>
+        <div className="d-flex align-items-center">
+          <span className="badge bg-success mr-auto ">{task.timeLeft}</span>
+          <FaEdit size={35} style={{ cursor: "pointer" }} className="p-2" />
+          <MdDelete
+            onClick={() => handleDeleteTask(task.id)}
+            size={22}
+            style={{ cursor: "pointer" }}
+          />
         </div>
         <h5 className="mt-2">{task.title}</h5>
         <p className="text-muted">{task.description}</p>
@@ -242,19 +249,16 @@ const FcTodoList: React.FC = () => {
         </span>
         <div className="d-flex justify-content-between align-items-center mt-3 p-2 bg-light rounded">
           <div className="d-flex align-items-center">
-            <span>Due Date: {formatDate(task.dueDate)}</span>
+            <span>
+              <FaCalendarAlt size={20} className="me-2" />
+              {formatDate(task.dueDate)}
+            </span>
           </div>
           <div className="d-flex align-items-center">
             <span>Estimated Time: {task.estimatedTime}</span>
           </div>
         </div>
-        <Button
-          onClick={() => handleDeleteTask(task.id)}
-          variant="danger"
-          size="sm"
-        >
-          Delete
-        </Button>
+
         {task.status !== "completed" && (
           <FormCheck
             type="checkbox"
@@ -269,17 +273,34 @@ const FcTodoList: React.FC = () => {
 
   return (
     <div>
-      <ExpBar />
       <h2 className="pt-5 ps-3">Board</h2>
       <div className="board-container flex gap-4">
         <div className="task-column">
-          <h3 className="text-blue-500 text">On Progress</h3>
+          <span className="icons col-sm-auto">
+            <svg height={13} width={10}>
+              <circle fill="blue" cx={5} cy={5} r={5} />
+            </svg>
+          </span>
+          <span className="ps-2 fw-medium text col-sm-auto">On Progress</span>
+
+          <svg height="2%" width="100%" className="mb-4 mt-2">
+            <line x1="0" y1="10" x2="100%" y2="10" id="custom-line1" />
+          </svg>
           {tasks
             .filter((task) => task.status === "onProgress")
             .map(renderTaskCard)}
         </div>
         <div className="task-column">
-          <h3 className="text-yellow-500 text">Pending</h3>
+          <span className="icons col-sm-auto">
+            <svg height={13} width={10}>
+              <circle fill="yellow" cx={5} cy={5} r={5} />
+            </svg>
+          </span>
+          <span className="ps-2 fw-medium text col-sm-auto">Pending</span>
+
+          <svg height="2%" width="100%" className="mb-4 mt-2">
+            <line x1="0" y1="10" x2="100%" y2="10" id="custom-line2" />
+          </svg>
           {tasks
             .filter((task) => task.status === "pending")
             .map(renderTaskCard)}
@@ -292,9 +313,6 @@ const FcTodoList: React.FC = () => {
               </svg>
             </span>
             <span className="ps-2 fw-medium text col-sm-auto">Completed</span>
-            <li className="btn col-sm-auto" id="dot-btn">
-              <BsThreeDots />
-            </li>
           </div>
           <svg height="2%" width="100%" className="mb-4 mt-2">
             <line x1="0" y1="10" x2="100%" y2="10" id="custom-line3" />
