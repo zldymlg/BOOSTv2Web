@@ -226,9 +226,10 @@ const PomodoroTimer: React.FC = () => {
     setTasksCompletedToday((prev) => prev + 1);
   };
 
-  const stopTimer = (currentTask: Task | null) => {
+  const stopTimer = (currentTask: Task | null = null) => {
     setIsRunning(false);
 
+    // Check if the current task is completed
     if (currentTask?.completed) {
       console.log("Task completed, stopping the timer.");
     }
@@ -569,11 +570,10 @@ const PomodoroTimer: React.FC = () => {
 
         // If no tasks left, stop & reset timer
         if (updatedTasks.length === 0) {
-          stopTimer(); // Stops any running interval
           setTimeLeft(pomodoroDuration); // Reset to default Pomodoro time
           setMode("pomodoro");
           setIsRunning(false); // Explicitly stop the timer
-
+          stopTimer();
           // Cancel any ongoing animations
           if (animationFrameRef.current) {
             cancelAnimationFrame(animationFrameRef.current);
