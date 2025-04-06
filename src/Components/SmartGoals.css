@@ -22,25 +22,11 @@
   position: relative;
 }
 
-.goal.specific {
-  background-color: #007bff; 
-}
-
-.goal.measurable {
-  background-color: #dc3545; 
-}
-
-.goal.achievable {
-  background-color: #28a745; 
-}
-
-.goal.relevant {
-  background-color: #ffc107; 
-}
-
-.goal.timeBound {
-  background-color: #6f42c1; 
-}
+.goal.specific { background-color: #007bff; }
+.goal.measurable { background-color: #dc3545; }
+.goal.achievable { background-color: #28a745; }
+.goal.relevant { background-color: #ffc107; }
+.goal.timeBound { background-color: #6f42c1; }
 
 .plus-btn {
   background: none;
@@ -66,33 +52,20 @@
   padding: 0.5rem 1rem;
   margin: 0.5rem 0;
   border-radius: 4px;
-  font-size: 0.875rem; 
+  font-size: 0.875rem;
   text-align: left;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.goal-item .buttons {
-  display: flex;
-  gap: 0.5rem; 
-}
-
-.goal-item button {
-  background: none;
-  border: none;
+.edit-icon, .delete-icon {
   cursor: pointer;
-  font-size: 0.875rem;
   margin-left: 0.5rem;
 }
 
-.goal-item .edit-btn {
-  color: #007bff; 
-}
-
-.goal-item .delete-btn {
-  color: #dc3545; 
-}
+.edit-icon { color: #007bff; }
+.delete-icon { color: #dc3545; }
 
 .goal span {
   margin-left: 2.5rem; 
@@ -101,24 +74,20 @@
 .flex-header {
   display: flex;
   align-items: center;
-  justify-content: space-between; 
+  justify-content: space-between;
   width: 100%;
   padding: 1rem 2rem;
   box-sizing: border-box;
 }
 
 .flex-header .title {
-  flex-grow: 1; 
-  text-align: center; 
-  font-size: 1.125rem; 
+  flex-grow: 1;
+  text-align: center;
+  font-size: 1.125rem;
   font-weight: bold;
 }
 
 .flex-header .back-btn {
-  cursor: pointer;
-}
-
-.flex-header  {
   cursor: pointer;
 }
 
@@ -135,62 +104,51 @@
   z-index: 1000;
 }
 
-#modal-content {
-  background: white;
+.modal-content {
   background-color: #ffffff;
   padding: 1.25rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 90%; 
-  max-width: 400px; 
+  width: 90%;
+  max-width: 400px;
   z-index: 1001;
 }
 
-#modal-buttons {
+.modal-buttons {
   display: flex;
   justify-content: space-between;
   margin-top: 1.25rem;
 }
 
-#edit {
-  cursor: pointer;
-  align-self: end;
-}
-
-#delete {
-  cursor: pointer;
-  align-self: end;
-}
-
 @media (max-width: 768px) {
   .goal {
-    width: 100%; 
-    font-size: 0.875rem; 
+    width: 100%;
+    font-size: 0.875rem;
   }
 
   .flex-header {
-    padding: 0.5rem 1rem; 
+    padding: 0.5rem 1rem;
   }
 
-  #modal-content {
-    padding: 1rem; 
+  .modal-content {
+    padding: 1rem;
   }
 
   .goal-item {
-    font-size: 0.75rem; 
+    font-size: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
   .flex-header .title {
-    font-size: 1rem; 
+    font-size: 1rem;
   }
 
   .goal {
-    padding: 0.75rem; 
+    padding: 0.75rem;
   }
 
   .goal-item {
-    padding: 0.5rem; 
+    padding: 0.5rem;
   }
 }
