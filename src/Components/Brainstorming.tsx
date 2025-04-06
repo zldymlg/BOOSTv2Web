@@ -3,19 +3,20 @@ import { BsSearch } from "react-icons/bs";
 import SmartGoals from "./SmartGoals";
 import Mindmap from "./Mindmap";
 import MindFlow from "./MindFlow";
-import ExpBar from "./exp-notif-cal.tsx";
-import "./Brainstorming.css";
+import "./SmartGoals.css";
 
 export default function Brainstorming() {
   const [activeComponent, setActiveComponent] = useState("brainstorming");
 
   return (
     <React.Fragment>
-      <ExpBar />
       {activeComponent === "brainstorming" ? (
         <>
           <div className="row w-50 ps-5">
-            <button className="btn col-sm-auto border rounded-5 me-2" id="search">
+            <button
+              className="btn col-sm-auto border rounded-5 me-2"
+              id="search"
+            >
               <BsSearch />
             </button>
             <input
@@ -52,6 +53,7 @@ export default function Brainstorming() {
               <span className="pe-3">Date Created</span>
             </div>
           </div>
+
         </>
       ) : activeComponent === "mindmap" ? (
         <Mindmap onBack={() => setActiveComponent("brainstorming")} />
