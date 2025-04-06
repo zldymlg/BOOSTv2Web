@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { faTasks } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import { FaBell } from "react-icons/fa";
 import {
   getFirestore,
@@ -10,6 +9,10 @@ import {
   collection,
   query,
   getDocs,
+  updateDoc,
+  orderBy,
+  limit,
+  addDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { format } from "date-fns";
@@ -19,8 +22,9 @@ export default function ExpNotifCal() {
   const [exp, setExp] = useState<number | null>(null);
   const [level, setLevel] = useState<number | null>(0);
   const [xp, setXp] = useState<string>("0/0XP");
-  const [todoList, setTodoList] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [_todoList, setTodoList] = useState<any[]>([]);
+  const [dueNotifications, setDueNotifications] = useState<any[]>([]);
+  const [xpNotifications, setXpNotifications] = useState<any[]>([]);
   const [isFloating, setIsFloating] = useState(false);
 
   useEffect(() => {
@@ -78,7 +82,7 @@ export default function ExpNotifCal() {
             const soonest = upcomingTasks[0];
             const formattedDate = format(soonest.dueDate, "MMMM d, yyyy");
             const formattedTime = format(soonest.dueDate, "hh:mm a");
-            setNotifications([
+            setDueNotifications([
               {
                 title: soonest.title,
                 date: formattedDate,
@@ -86,10 +90,36 @@ export default function ExpNotifCal() {
               },
             ]);
           } else {
-            setNotifications([]);
+            setDueNotifications([]);
           }
 
           setTodoList(todos);
+
+          // Fetch XP history from the xpHistory collection
+          const xpHistoryRef = collection(db, "users", user.uid, "xpHistory");
+          const xpHistoryQuery = query(
+            xpHistoryRef,
+            orderBy("timestamp", "desc"),
+            limit(10)
+          ); // Fetch the most recent 10 notifications
+          const xpHistorySnapshot = await getDocs(xpHistoryQuery);
+          const xpNotifications: any[] = [];
+
+          xpHistorySnapshot.forEach((doc) => {
+            const xpData = doc.data();
+            const formattedDate = format(
+              xpData.timestamp.toDate(),
+              "MMMM d, yyyy"
+            );
+            const formattedTime = format(xpData.timestamp.toDate(), "hh:mm a");
+            xpNotifications.push({
+              title: `You earned ${xpData.xpAdded} XP!`,
+              date: formattedDate,
+              time: formattedTime,
+            });
+          });
+
+          setXpNotifications(xpNotifications); // Update state with fetched XP notifications
         }
       } catch (error) {
         console.error("Error fetching user data or to-do list:", error);
@@ -101,6 +131,68 @@ export default function ExpNotifCal() {
 
   const toggleFloating = () => {
     setIsFloating(!isFloating);
+  };
+
+  const handleNotificationClick = (index: number, type: string) => {
+    if (type === "xp") {
+      const updatedNotifications = [...xpNotifications];
+      updatedNotifications.splice(index, 1); // Remove notification on click
+      setXpNotifications(updatedNotifications);
+    } else if (type === "due") {
+      const updatedNotifications = [...dueNotifications];
+      updatedNotifications.splice(index, 1); // Remove notification on click
+      setDueNotifications(updatedNotifications);
+    }
+  };
+
+  // Function to add XP and trigger a notification
+  const addXp = async (amount: number) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      const db = getFirestore();
+      const userDocRef = doc(db, "users", user.uid);
+
+      try {
+        // Add XP to the user
+        const newExp = (exp || 0) + amount;
+        const newLevel = Math.floor(newExp / 100);
+        await updateDoc(userDocRef, {
+          exp: newExp,
+        });
+
+        // Update local state
+        setExp(newExp);
+        setLevel(newLevel);
+        setXp(`${newExp % 100}/100XP`);
+
+        // Get current time for the notification
+        const currentTime = new Date();
+        const formattedTime = format(currentTime, "hh:mm a");
+
+        // Create and add notification for XP increase with the current time
+        const newXpNotification = {
+          title: `You earned ${amount} XP!`,
+          date: format(currentTime, "MMMM d, yyyy"),
+          time: formattedTime,
+        };
+
+        // Update xpNotifications state
+        setXpNotifications((prevNotifications) => [
+          newXpNotification,
+          ...prevNotifications,
+        ]);
+
+        // Save XP history to Firestore
+        const xpHistoryRef = collection(db, "users", user.uid, "xpHistory");
+        await addDoc(xpHistoryRef, {
+          xpAdded: amount,
+          timestamp: new Date(),
+        });
+      } catch (error) {
+        console.error("Error adding XP:", error);
+      }
+    }
   };
 
   return (
@@ -123,7 +215,7 @@ export default function ExpNotifCal() {
                 size={22}
                 onClick={toggleFloating}
               />
-              {notifications.length > 0 && (
+              {(dueNotifications.length > 0 || xpNotifications.length > 0) && (
                 <div className="notification-dot"></div>
               )}
             </div>
@@ -137,20 +229,24 @@ export default function ExpNotifCal() {
               <button onClick={toggleFloating} className="close-btn"></button>
             </div>
             <hr />
-            <h5> Due Task </h5>
+            <h5>Due Tasks</h5>
 
             <div className="todo-list">
-              {notifications.length === 0 ? (
+              {dueNotifications.length === 0 ? (
                 <p>No upcoming tasks within a day.</p>
               ) : (
-                notifications.map((note, index) => (
-                  <div key={index} className="todo-card">
+                dueNotifications.map((note, index) => (
+                  <div
+                    key={index}
+                    className="todo-card"
+                    onClick={() => handleNotificationClick(index, "due")}
+                  >
                     <div className="todo-card-content">
                       <h5 className="task-title">
                         <FontAwesomeIcon
                           icon={faTasks}
                           className="icon notif pe-2"
-                          size="sm" // or any size you prefer, 'lg', 'sm', '2x', etc.
+                          size="sm"
                         />
                         {note.title}
                       </h5>
@@ -162,10 +258,38 @@ export default function ExpNotifCal() {
                 ))
               )}
             </div>
+
+            <hr />
+            <h5>XP Notifications</h5>
+            <div className="todo-list">
+              {xpNotifications.length === 0 ? (
+                <p>No recent XP updates.</p>
+              ) : (
+                xpNotifications.map((note, index) => (
+                  <div
+                    key={index}
+                    className="todo-card"
+                    onClick={() => handleNotificationClick(index, "xp")}
+                  >
+                    <div className="todo-card-content">
+                      <h5 className="task-title">
+                        <FontAwesomeIcon
+                          icon={faTasks}
+                          className="icon notif pe-2"
+                          size="sm"
+                        />
+                        {note.title}
+                      </h5>
+                      <p className="due-date-time">
+                        Earned on {note.date} at {note.time}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
-
-        <hr />
       </div>
     </React.Fragment>
   );

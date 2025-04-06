@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import "./Pomodoro.css";
 import { firestore, auth } from "../firebase";
+import { format } from "date-fns";
 
 import {
   collection,
@@ -209,6 +210,21 @@ const PomodoroTimer: React.FC = () => {
         // Update the EXP field within the user's document
         await updateDoc(userDocRef, {
           exp: updatedExp,
+        });
+
+        // Log the XP update with the timestamp and amount
+        const xpHistoryRef = collection(
+          firestore,
+          "users",
+          userId,
+          "xpHistory"
+        );
+
+        await addDoc(xpHistoryRef, {
+          xpAdded: expEarned,
+          timestamp: new Date(),
+          formattedDate: format(new Date(), "MMMM d, yyyy"),
+          formattedTime: format(new Date(), "hh:mm a"),
         });
       } else {
         console.warn("User document not found.");
