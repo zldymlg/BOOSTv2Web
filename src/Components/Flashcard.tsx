@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./Flashcard.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BsSearch } from "react-icons/bs";
 import ExpBar from "./exp-notif-cal.tsx";
 import FlashcardDetails from "./Flashcard-content.tsx";
-import { db } from "../firebase";
-import { collection, addDoc, getDocs, doc, deleteDoc } from "firebase/firestore";
+
+
 
 type ActiveComponentState =
   | "flashcard"
@@ -24,7 +24,7 @@ export default function Flashcard() {
 
   const [topics, setTopics] = useState<
     {
-      id: string;
+      id: number;
       title: string;
       decks: { name: string; description: string }[];
     }[]
@@ -32,16 +32,7 @@ export default function Flashcard() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    const fetchTopics = async () => {
-      const topicsCollection = await getDocs(collection(db, "topics"));
-      const topicsData = topicsCollection.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as typeof topics;
-      setTopics(topicsData);
-    };
-    fetchTopics();
-  }, []);
-
-  const handleOpenAddDeck = (topicId: string) => {
+  const handleOpenAddDeck = (topicId: number) => {
     setSelectedTopicId(topicId);
     setShowAddDeckModal(true);
   };
@@ -53,13 +44,24 @@ export default function Flashcard() {
     setSelectedTopicId(null);
   };
 
-  const handleCreateDeck = async () => {
+  const handleCreateDeck = () => {
     if (newDeckName.trim() === "" || selectedTopicId === null) return;
-    const topicRef = doc(db, "topics", selectedTopicId);
-    await addDoc(collection(topicRef, "decks"), {
-      name: newDeckName.trim(),
-      description: newDeckDescription.trim(),
-    });
+    setTopics((prevTopics) =>
+      prevTopics.map((topic) =>
+        topic.id === selectedTopicId
+          ? {
+              ...topic,
+              decks: [
+                ...topic.decks,
+                {
+                  name: newDeckName.trim(),
+                  description: newDeckDescription.trim(),
+                },
+              ],
+            }
+          : topic
+      )
+    );
     handleCloseAddDeck();
   };
 
@@ -69,24 +71,25 @@ export default function Flashcard() {
     setNewTopicName("");
   };
 
-  const handleCreateTopic = async () => {
+  const handleCreateTopic = () => {
     if (newTopicName.trim() === "") return;
-    const newTopicRef = await addDoc(collection(db, "topics"), {
+    const newTopic = {
+      id: Date.now(),
       title: newTopicName.trim(),
       decks: [],
-    });
-    setTopics((prevTopics) => [...prevTopics, { id: newTopicRef.id, title: newTopicName.trim(), decks: [] }]);
+    };
+    setTopics((prevTopics) => [...prevTopics, newTopic]);
     handleCloseAddTopic();
   };
 
-  const handleDeleteDeck = async (deckTitle: string) => {
+  const handleDeleteDeck = (deckTitle: string) => {
     setTopics((prevTopics) =>
       prevTopics.map((topic) => ({
         ...topic,
         decks: topic.decks.filter((deck) => deck.name !== deckTitle),
       }))
     );
-    setActiveComponent("flashcard");
+    setActiveComponent("flashcard"); 
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,9 +160,13 @@ export default function Flashcard() {
                     <h5 id="flashcard-title" className="m-2">
                       {highlightText(deck.name, searchQuery)}
                     </h5>
-                    <p id="flashcard-description" className="text-muted small ms-3">
+                    <p
+                      id="flashcard-description"
+                      className="text-muted small ms-3"
+                    >
                       {deck.description}
                     </p>
+                    <h6 className="text-end mt-3">5 Cards</h6>
                   </div>
                 ))}
 
@@ -173,14 +180,84 @@ export default function Flashcard() {
               </div>
             </div>
           ))}
+
+          <div className="ms-3">
+            <button
+              className="btn ms-3 mt-4 ps-5 pe-5 rounded-5"
+              id="add-topic"
+              onClick={handleOpenAddTopic}
+            >
+              + Add Topic
+            </button>
+          </div>
         </>
       ) : (
         <FlashcardDetails
           onBack={() => setActiveComponent("flashcard")}
           deckTitle={activeComponent.deckTitle}
           deckDescription={activeComponent.deckDescription}
-          onDeleteDeck={handleDeleteDeck}
+          onDeleteDeck={handleDeleteDeck} 
         />
+      )}
+
+      {showAddDeckModal && (
+        <div className="modal-backdrop-deck">
+          <div className="modal-content p-4 rounded-5" id="card-bg">
+            <h3>Create New Deck</h3>
+            <p>A Deck is a set of flashcards.</p>
+            <input
+              type="text"
+              placeholder="Deck Title (required)"
+              value={newDeckName}
+              onChange={(e) => setNewDeckName(e.target.value)}
+              className="modal-input form-control mb-2"
+            />
+            <textarea
+              placeholder="Deck Description"
+              value={newDeckDescription}
+              onChange={(e) => setNewDeckDescription(e.target.value)}
+              className="modal-input form-control mb-3"
+            />
+            <div className="modal-buttons">
+              <button
+                onClick={handleCloseAddDeck}
+                className="btn btn-secondary me-2"
+              >
+                Cancel
+              </button>
+              <button onClick={handleCreateDeck} className="btn btn-primary">
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddTopicModal && (
+        <div className="modal-backdrop-topic">
+          <div className="modal-content p-4 rounded-5" id="card-bg">
+            <h3>Create New Topic</h3>
+            <p>A Topic is a set of decks.</p>
+            <input
+              type="text"
+              placeholder="Topic Title (required)"
+              value={newTopicName}
+              onChange={(e) => setNewTopicName(e.target.value)}
+              className="modal-input form-control mb-3"
+            />
+            <div className="modal-buttons">
+              <button
+                onClick={handleCloseAddTopic}
+                className="btn btn-secondary me-2"
+              >
+                Cancel
+              </button>
+              <button onClick={handleCreateTopic} className="btn btn-primary">
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </React.Fragment>
   );
