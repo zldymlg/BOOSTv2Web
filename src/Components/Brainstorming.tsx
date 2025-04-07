@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { BsSearch } from "react-icons/bs";
 import SmartGoals from "./SmartGoals";
 import Mindmap from "./Mindmap";
+<<<<<<< HEAD
 import MindFlow from "./MindFlow";
+=======
+import MindFlow from "./MindFlow"; // Import the new MindFlow component
+import { BsSearch } from "react-icons/bs";
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
 import "./SmartGoals.css";
 
 export default function Brainstorming() {
@@ -58,6 +63,11 @@ export default function Brainstorming() {
         <Mindmap onBack={() => setActiveComponent("brainstorming")} />
       ) : activeComponent === "smartgoals" ? (
         <SmartGoals onBack={() => setActiveComponent("brainstorming")} />
+<<<<<<< HEAD
+=======
+      ) : activeComponent === "mindflow" ? (
+        <MindFlow onBack={() => setActiveComponent("brainstorming")} />
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
       ) : (
         <MindFlow onBack={() => setActiveComponent("brainstorming")} />
       )}

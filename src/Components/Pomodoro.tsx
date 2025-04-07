@@ -53,11 +53,18 @@ const PomodoroTimer: React.FC = () => {
   const backgroundMusics = ["Time Ticking", "Rainy", "Cozy"];
   const [timeLeft, setTimeLeft] = useState(
     parseInt(localStorage.getItem("timeLeft") || `${25 * 60}`, 10)
+<<<<<<< HEAD
   );
   const [isRunning, setIsRunning] = useState(
     JSON.parse(localStorage.getItem("isRunning") || "false")
   );
 
+=======
+  ); // Load timeLeft from localStorage
+  const [isRunning, setIsRunning] = useState(
+    JSON.parse(localStorage.getItem("isRunning") || "false")
+  ); // Load isRunning from localStorage
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
   const [mode, setMode] = useState(localStorage.getItem("mode") || "pomodoro"); //Load mode from localStorage
   const [showStartWarning, setShowStartWarning] = useState(false);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
@@ -255,6 +262,13 @@ const PomodoroTimer: React.FC = () => {
       animationFrameRef.current = null;
     }
   };
+<<<<<<< HEAD
+=======
+  const resetTimer = () => {
+    stopTimer();
+    setTimeLeft(pomodoroDuration);
+  };
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
 
   useEffect(() => {
     const storedSettings = JSON.parse(
@@ -303,16 +317,22 @@ const PomodoroTimer: React.FC = () => {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
+<<<<<<< HEAD
       if (isRunning) {
         window.addEventListener("beforeunload", handleTabSwitch);
       } else {
         window.removeEventListener("beforeunload", handleTabSwitch);
       }
+=======
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
     }
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+<<<<<<< HEAD
         window.removeEventListener("beforeunload", handleTabSwitch);
+=======
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
       }
     };
   }, [isRunning, timeLeft]);
@@ -577,6 +597,7 @@ const PomodoroTimer: React.FC = () => {
     }
 
     try {
+<<<<<<< HEAD
       const taskRef = doc(firestore, "users", userId, "Pomotask", taskId);
       await deleteDoc(taskRef);
 
@@ -611,6 +632,49 @@ const PomodoroTimer: React.FC = () => {
       console.error("Error deleting task:", error);
     }
   };
+=======
+      const taskRef = doc(firestore, "users", userId, "tasks", taskId);
+      await deleteDoc(taskRef);
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+
+      if (tasks.length === 0) {
+        stopTimer(); //Completely stops the timer
+        setTimeLeft(pomodoroDuration);
+        setMode("pomodoro");
+        setCurrentTaskIndex(0);
+        setIsRunning(false); //Important: Stop the timer explicitly
+
+        //Restart the timer animation if needed (e.g., if isRunning is true)
+        startTimeRef.current = 0; //Reset startTime
+        animationFrameRef.current = null; //Reset animationFrame
+        if (isRunning) {
+          setIsRunning(true); //Restart the timer
+          startTimeRef.current = Date.now();
+          const animate = () => {
+            //The same animation function
+            const elapsedTime = Date.now() - startTimeRef.current;
+            const newTimeLeft = Math.max(
+              0,
+              timeLeft - Math.floor(elapsedTime / 1000)
+            );
+            setTimeLeft(newTimeLeft);
+            if (newTimeLeft > 0) {
+              animationFrameRef.current = requestAnimationFrame(animate);
+            } else {
+              handleSessionEnd();
+              playRingtone();
+            }
+          };
+          animationFrameRef.current = requestAnimationFrame(animate);
+        }
+      } else if (currentTaskIndex >= tasks.length) {
+        setCurrentTaskIndex(0);
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };  
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
 
   useEffect(() => {
     localStorage.setItem("timeLeft", JSON.stringify(timeLeft)); // Save timeLeft to localStorage
@@ -943,6 +1007,7 @@ const PomodoroTimer: React.FC = () => {
           </Card>
         )}
 
+<<<<<<< HEAD
         {sortedTasks
           .filter((t) => !t.completed) // Filter out completed tasks from the tasks list
           .map((t, index) => (
@@ -980,6 +1045,44 @@ const PomodoroTimer: React.FC = () => {
                 <span className="badge bg-light text-dark">
                   Pomos Est.: {t.pomosEst} / Completed: {t.pomodorosCompleted}
                 </span>
+=======
+        {sortedTasks.map((t, index) => (
+          <Card
+            key={t.id}
+            className="mt-3 p-3 rounded d-flex flex-row align-items-start bg-success shadow text-start"
+            style={{ color: "white" }}
+          >
+            <div
+              className="bg-warning"
+              style={{ width: "10px", height: "100%" }}
+            ></div>
+            <div className="p-2 w-100">
+              <h5>
+                Task {index + 1}: {t.text}
+              </h5>
+              <div
+                className="p-2 mb-2 rounded text-dark"
+                style={{ backgroundColor: "#FDE9D8" }}
+              >
+                {t.notes}
+              </div>
+              <span className="badge bg-light text-dark me-2">
+                {t.priority}
+              </span>
+              <span className="badge bg-light text-dark">
+                Pomos Est.: {t.pomosEst} / Completed: {t.pomodorosCompleted}
+              </span>
+              <Button
+                variant="danger"
+                onClick={() => deleteTask(t.id!, user.uid)}
+                className="ms-auto"
+              >
+                <FaTrash />
+              </Button>
+            </div>
+          </Card>
+        ))}
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
 
                 <FaTrash
                   onClick={() => deleteTask(t.id!, user.uid)}

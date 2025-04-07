@@ -1,107 +1,8 @@
 import React, { useState } from "react";
 import "./LoginSecurity.css";
-import { signInWithPopup, deleteUser } from "firebase/auth";
-import { auth, facebookProvider, googleProvider } from "../firebase";
-import { User } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
-
 
 export default function LogSec() {
-  const [showInput, setShowInput]  = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-
-
-  const db = getFirestore();
-
- 
-  const handleFacebookLogin = () => {
-    signInWithPopup(auth, facebookProvider)
-      .then((result) => {
-        setUser(result.user);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-
-  const handleGoogleLogin = () => {
-    signInWithPopup(auth, googleProvider)
-      .then((result) => {
-        setUser(result.user);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
- 
-  const handleDeleteAccount = async () => {
-    if (!auth.currentUser) {
-      alert("No user is logged in.");
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete your account? This action is irreversible!"
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await deleteUser(auth.currentUser);
-      alert("Your account has been deleted.");
-      setUser(null);
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      alert("Error deleting account. Please log in again and try.");
-    }
-  };
-
-  
-  const handleDownloadData = async () => {
-    if (!auth.currentUser) {
-      alert("No user is logged in.");
-      return;
-    }
-  
-    const confirmDownload = window.confirm(
-      "Are you sure you want to download your data?"
-    );
-  
-    if (!confirmDownload) return;
-  
-    try {
-     
-      const userDocRef = doc(db, "users", auth.currentUser.uid);  
-      const userDocSnap = await getDoc(userDocRef);
-  
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-  
-        
-        const dataStr = JSON.stringify(userData, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
-  
-        
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = '${auth.currentUser.displayName}_data.json';  
-  
-       
-        a.click();
-  
-        
-        URL.revokeObjectURL(url);
-      } else {
-        alert("No additional data found for this user.");
-      }
-    } catch (error) {
-      console.error("Error downloading data:", error);
-      alert("There was an error downloading your data. Please try again.");
-    }
-  };
+  const [showInput, setShowInput] = useState(false);
 
   return (
     <React.Fragment>
@@ -121,11 +22,7 @@ export default function LogSec() {
             {showInput ? "Confirm" : ""}
           </li>
           {showInput && (
-            <input
-              type="text"
-              className="col-sm-auto"
-              placeholder="Enter text..."
-            />
+            <input type="text" className="col-sm-auto" placeholder="Enter text..." />
           )}
         </div>
         <div className="row pt-2">
@@ -135,21 +32,11 @@ export default function LogSec() {
         <h3>Social Media Login</h3>
         <ul className="row gap-2">
           <li className="w-50 btn">
-            <button
-              className="btn btn-primary btn-md"
-              onClick={handleFacebookLogin}
-            >
-              Facebook
-            </button>
-          </li>          
-          <li className="w-50 btn">
-            <button
-              className="btn btn-primary btn-md"
-              onClick={handleGoogleLogin}
-            >
-              Google
-            </button>
+            <FaFacebookSquare size="30" />
+            Facebook
           </li>
+          <li className="w-50 btn">Instagram</li>
+          <li className="w-50 btn">Gmail</li>
         </ul>
 
         {user && (
@@ -160,24 +47,11 @@ export default function LogSec() {
         )}
 
         <div className="row gap-5 mt-5">
-          <li className="w-50 btn">
-            <button
-              className="btn btn-success btn-md"
-              onClick={handleDownloadData}
-            >
-              Download Data
-            </button>
-          </li>
-          <li className="w-50 btn">
-            <button
-              className="btn btn-danger btn-md"
-              onClick={handleDeleteAccount}
-            >
-              Delete Account
-            </button>
-          </li>
+          <li className="w-50 btn">Download Data</li>
+          <li className="w-50 btn">Account Deletion</li>
         </div>
       </div>
     </React.Fragment>
   );
 }
+//LoginSecurity.tsx

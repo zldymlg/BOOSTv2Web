@@ -15,9 +15,12 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@supabase/supabase-js": "^2.49.1",
     "bootstrap": "^5.3.3",
+<<<<<<< HEAD
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
+=======
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
     "firebase": "^11.5.0",
     "framer-motion": "^12.4.1",
     "lucide-react": "^0.474.0",
@@ -31,7 +34,10 @@
     "react-modal": "^3.16.3",
     "react-router-dom": "^7.2.0",
     "react-swipeable": "^7.0.2",
+<<<<<<< HEAD
     "react-transition-group": "^4.4.5",
+=======
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
     "reactflow": "^11.11.4",
     "uuid": "^11.1.0"
   },
