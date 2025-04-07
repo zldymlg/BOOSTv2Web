@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoIosArrowBack, IoIosAddCircle } from "react-icons/io";
 import { IoShareSocialSharp } from "react-icons/io5";
 import { FaEdit } from "react-icons/fa";
@@ -7,46 +7,74 @@ import "./Flashcard-content.css";
 import { Modal, Button, Form } from "react-bootstrap";
 import { MdDeleteForever } from "react-icons/md";
 import StartFlashcards from "./Flashcard-QnA.tsx";
+import { db, auth } from "../firebase"; // Ensure Firebase is configured
+import {
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 
 interface Flashcard {
+  id: string;
   question: string;
   answer: string;
 }
 
 interface FlashcardContentProps {
   onBack: () => void;
+  deckId: string;
+  topicId: string;
   deckTitle: string;
   deckDescription: string;
-  onDeleteDeck: (deckTitle: string) => void;
 }
-
 
 export default function FlashcardContent({
   onBack,
+  deckId,
+  topicId,
   deckTitle,
   deckDescription,
-  onDeleteDeck,
 }: FlashcardContentProps) {
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [newQuestion, setNewQuestion] = useState("");
   const [newAnswer, setNewAnswer] = useState("");
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [isStarting, setIsStarting] = useState(false);
 
-  if (isStarting) {
-    return <StartFlashcards cards={cards} deckTitle={deckTitle} onExit={() => setIsStarting(false)} />;
-  }
+  const user = auth.currentUser;
+  const cardsCollection = user
+    ? collection(db, `users/${user.uid}/flashcard/${topicId}/decks/${deckId}/cards`)
+    : null;
 
-  const addCard = () => {
-    if (newQuestion.trim() !== "" && newAnswer.trim() !== "") {
-      setCards([...cards, { question: newQuestion, answer: newAnswer }]);
-      setNewQuestion("");
-      setNewAnswer("");
-      setShowCreateModal(false);
-    }
+  useEffect(() => {
+    if (!cardsCollection) return;
+
+    const fetchCards = async () => {
+      const querySnapshot = await getDocs(cardsCollection);
+      const fetchedCards = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Flashcard[];
+      setCards(fetchedCards);
+    };
+
+    fetchCards();
+  }, [cardsCollection]);
+
+  const addCard = async () => {
+    if (!cardsCollection || newQuestion.trim() === "" || newAnswer.trim() === "") return;
+
+    const newCard = { question: newQuestion, answer: newAnswer };
+    const docRef = await addDoc(cardsCollection, newCard);
+    setCards([...cards, { id: docRef.id, ...newCard }]);
+    setNewQuestion("");
+    setNewAnswer("");
+    setShowCreateModal(false);
   };
 
   const openEditModal = (index: number) => {
@@ -56,19 +84,33 @@ export default function FlashcardContent({
     setShowEditModal(true);
   };
 
-  const saveEdit = () => {
-    if (editIndex !== null && newQuestion.trim() !== "" && newAnswer.trim() !== "") {
-      const updatedCards = [...cards];
-      updatedCards[editIndex] = { question: newQuestion, answer: newAnswer };
-      setCards(updatedCards);
-      setEditIndex(null);
-      setShowEditModal(false);
-    }
+  const saveEdit = async () => {
+    if (editIndex === null || !cardsCollection || newQuestion.trim() === "" || newAnswer.trim() === "") return;
+
+    const cardId = cards[editIndex].id;
+    const cardRef = doc(db, `users/${user!.uid}/flashcard/${topicId}/decks/${deckId}/cards`, cardId);
+    await updateDoc(cardRef, { question: newQuestion, answer: newAnswer });
+
+    const updatedCards = [...cards];
+    updatedCards[editIndex] = { id: cardId, question: newQuestion, answer: newAnswer };
+    setCards(updatedCards);
+    setEditIndex(null);
+    setShowEditModal(false);
   };
 
-  const deleteCard = (index: number) => {
+  const deleteCard = async (index: number) => {
+    if (!cardsCollection) return;
+
+    const cardId = cards[index].id;
+    const cardRef = doc(db, `users/${user!.uid}/flashcard/${topicId}/decks/${deckId}/cards`, cardId);
+    await deleteDoc(cardRef);
+
     setCards(cards.filter((_, i) => i !== index));
   };
+
+  if (isStarting) {
+    return <StartFlashcards cards={cards} deckTitle={deckTitle} onExit={() => setIsStarting(false)} />;
+  }
 
   return (
     <React.Fragment>
@@ -102,9 +144,6 @@ export default function FlashcardContent({
             </div>
           </div>
         </div>
-        <button className="btn btn-danger mt-3 mt-md-0" onClick={() => setShowDeleteModal(true)}>
-          Delete Deck
-        </button>
       </div>
 
       <div className="container mt-5">
@@ -117,7 +156,7 @@ export default function FlashcardContent({
         <h2>Cards</h2>
         {cards.map((card, index) => (
           <div
-            key={index}
+            key={card.id}
             className="card p-3 d-flex align-items-center justify-content-between flex-row mb-2 flex-wrap"
           >
             <span className="text-break">{card.question}</span>
@@ -137,7 +176,6 @@ export default function FlashcardContent({
         </div>
       </div>
 
-      {/* Create Modal */}
       <Modal
         show={showCreateModal}
         onHide={() => {
@@ -182,7 +220,6 @@ export default function FlashcardContent({
         </Modal.Footer>
       </Modal>
 
-      {/* Edit Modal */}
       <Modal
         show={showEditModal}
         onHide={() => {
@@ -222,28 +259,6 @@ export default function FlashcardContent({
           </Button>
           <Button variant="primary" onClick={saveEdit}>
             Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Delete Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Delete Deck</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this deck? This action cannot be undone.</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              onDeleteDeck(deckTitle);
-              setShowDeleteModal(false);
-            }}
-          >
-            Delete
           </Button>
         </Modal.Footer>
       </Modal>

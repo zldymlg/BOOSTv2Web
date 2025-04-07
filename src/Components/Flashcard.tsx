@@ -18,7 +18,7 @@ import {
 
 type ActiveComponentState =
   | "flashcard"
-  | { name: "flashcardDetails"; deckTitle: string; deckDescription: string };
+  | { name: "flashcardDetails"; deckId: string; deckTitle: string; deckDescription: string };
 
 export default function Flashcard() {
   const [user, setUser] = useState<any>(null);
@@ -239,6 +239,7 @@ export default function Flashcard() {
                     onClick={() =>
                       setActiveComponent({
                         name: "flashcardDetails",
+                        deckId: deck.id,
                         deckTitle: deck.name,
                         deckDescription: deck.description,
                       })
@@ -283,6 +284,7 @@ export default function Flashcard() {
       ) : (
         <FlashcardDetails
           onBack={() => setActiveComponent("flashcard")}
+          deckId={activeComponent.deckId}
           deckTitle={activeComponent.deckTitle}
           deckDescription={activeComponent.deckDescription}
           onDeleteDeck={(deckId) => handleDeleteDeck(deckId, selectedTopicId!)}
