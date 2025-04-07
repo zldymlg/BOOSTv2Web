@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { faTasks } from "@fortawesome/free-solid-svg-icons";
+import { faTasks, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaBell } from "react-icons/fa";
 import {
@@ -9,23 +9,26 @@ import {
   collection,
   query,
   getDocs,
-  updateDoc,
   orderBy,
   limit,
-  addDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { format } from "date-fns";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 import "./exp-notif-cal.css";
 
 export default function ExpNotifCal() {
   const [exp, setExp] = useState<number | null>(null);
   const [level, setLevel] = useState<number | null>(0);
   const [xp, setXp] = useState<string>("0/0XP");
-  const [_todoList, setTodoList] = useState<any[]>([]);
   const [dueNotifications, setDueNotifications] = useState<any[]>([]);
   const [xpNotifications, setXpNotifications] = useState<any[]>([]);
-  const [isFloating, setIsFloating] = useState(false);
+  const [isNotifFloating, setIsNotifFloating] = useState(false);
+  const [isCalFloating, setIsCalFloating] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [tasksDueDates, setTasksDueDates] = useState<Date[]>([]);
+  const [tasksForSelectedDate, setTasksForSelectedDate] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchExpAndTodoList = async () => {
@@ -45,24 +48,22 @@ export default function ExpNotifCal() {
             setXp(`${currentExp % 100}/100XP`);
           }
 
+          // Query the user's todolist subcollection
           const todoQuery = query(
             collection(db, "users", user.uid, "todolist")
           );
           const querySnapshot = await getDocs(todoQuery);
-          const todos: any[] = [];
           const upcomingTasks: any[] = [];
+          const taskDueDates: Date[] = [];
 
           const now = new Date();
           const startOfToday = new Date(now);
           startOfToday.setHours(0, 0, 0, 0);
-
           const oneDayLater = new Date(now);
           oneDayLater.setDate(now.getDate() + 1);
 
           querySnapshot.forEach((doc) => {
             const todoData = doc.data();
-            todos.push(todoData);
-
             if (todoData.dueDate) {
               const dueDate = todoData.dueDate.toDate();
               if (dueDate >= startOfToday && dueDate <= oneDayLater) {
@@ -70,14 +71,13 @@ export default function ExpNotifCal() {
                   title: todoData.title,
                   dueDate: dueDate,
                 });
+                taskDueDates.push(dueDate);
               }
             }
           });
 
-          // Sort by soonest due date
           upcomingTasks.sort((a, b) => a.dueDate - b.dueDate);
 
-          // Pick the task with the nearest due date
           if (upcomingTasks.length > 0) {
             const soonest = upcomingTasks[0];
             const formattedDate = format(soonest.dueDate, "MMMM d, yyyy");
@@ -93,17 +93,14 @@ export default function ExpNotifCal() {
             setDueNotifications([]);
           }
 
-          setTodoList(todos);
-
-          // Fetch XP history from the xpHistory collection
           const xpHistoryRef = collection(db, "users", user.uid, "xpHistory");
           const xpHistoryQuery = query(
             xpHistoryRef,
             orderBy("timestamp", "desc"),
             limit(10)
-          ); // Fetch the most recent 10 notifications
+          );
           const xpHistorySnapshot = await getDocs(xpHistoryQuery);
-          const xpNotifications: any[] = [];
+          const xpNotifs: any[] = [];
 
           xpHistorySnapshot.forEach((doc) => {
             const xpData = doc.data();
@@ -112,14 +109,15 @@ export default function ExpNotifCal() {
               "MMMM d, yyyy"
             );
             const formattedTime = format(xpData.timestamp.toDate(), "hh:mm a");
-            xpNotifications.push({
+            xpNotifs.push({
               title: `You earned ${xpData.xpAdded} XP!`,
               date: formattedDate,
               time: formattedTime,
             });
           });
 
-          setXpNotifications(xpNotifications); // Update state with fetched XP notifications
+          setXpNotifications(xpNotifs);
+          setTasksDueDates(taskDueDates);
         }
       } catch (error) {
         console.error("Error fetching user data or to-do list:", error);
@@ -129,168 +127,197 @@ export default function ExpNotifCal() {
     fetchExpAndTodoList();
   }, []);
 
-  const toggleFloating = () => {
-    setIsFloating(!isFloating);
+  const toggleNotifFloating = () => {
+    setIsNotifFloating(!isNotifFloating);
+    setIsCalFloating(false);
   };
 
-  const handleNotificationClick = (index: number, type: string) => {
-    if (type === "xp") {
-      const updatedNotifications = [...xpNotifications];
-      updatedNotifications.splice(index, 1); // Remove notification on click
-      setXpNotifications(updatedNotifications);
-    } else if (type === "due") {
-      const updatedNotifications = [...dueNotifications];
-      updatedNotifications.splice(index, 1); // Remove notification on click
-      setDueNotifications(updatedNotifications);
-    }
+  const toggleCalFloating = () => {
+    setIsCalFloating(!isCalFloating);
+    setIsNotifFloating(false);
   };
 
-  // Function to add XP and trigger a notification
-  const addXp = async (amount: number) => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (user) {
-      const db = getFirestore();
-      const userDocRef = doc(db, "users", user.uid);
+  // Helper function to extract year, month, and day for comparison
+  const getDateKey = (date: Date) => {
+    return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+  };
 
-      try {
-        // Add XP to the user
-        const newExp = (exp || 0) + amount;
-        const newLevel = Math.floor(newExp / 100);
-        await updateDoc(userDocRef, {
-          exp: newExp,
+  // Function to highlight the dates with due tasks
+  const tileClassName = ({ date }: { date: Date }) => {
+    return tasksDueDates.some(
+      (taskDate) => getDateKey(taskDate) === getDateKey(date)
+    )
+      ? "highlight"
+      : "";
+  };
+
+  const handleCalendarChange = (newDate: Date) => {
+    setSelectedDate(newDate);
+    fetchTasksForSelectedDate(newDate); // Fetch tasks for the new selected date
+  };
+
+  // Fetch tasks for the selected date
+  const fetchTasksForSelectedDate = async (date: Date) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        const db = getFirestore();
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const todoQuery = query(
+          collection(db, "users", user.uid, "todolist"),
+          orderBy("dueDate")
+        );
+
+        const querySnapshot = await getDocs(todoQuery);
+        const tasks: any[] = [];
+
+        querySnapshot.forEach((doc) => {
+          const todoData = doc.data();
+          if (todoData.dueDate) {
+            const dueDate = todoData.dueDate.toDate();
+            if (dueDate >= startOfDay && dueDate <= endOfDay) {
+              tasks.push({
+                title: todoData.title,
+                dueDate: dueDate,
+              });
+            }
+          }
         });
 
-        // Update local state
-        setExp(newExp);
-        setLevel(newLevel);
-        setXp(`${newExp % 100}/100XP`);
-
-        // Get current time for the notification
-        const currentTime = new Date();
-        const formattedTime = format(currentTime, "hh:mm a");
-
-        // Create and add notification for XP increase with the current time
-        const newXpNotification = {
-          title: `You earned ${amount} XP!`,
-          date: format(currentTime, "MMMM d, yyyy"),
-          time: formattedTime,
-        };
-
-        // Update xpNotifications state
-        setXpNotifications((prevNotifications) => [
-          newXpNotification,
-          ...prevNotifications,
-        ]);
-
-        // Save XP history to Firestore
-        const xpHistoryRef = collection(db, "users", user.uid, "xpHistory");
-        await addDoc(xpHistoryRef, {
-          xpAdded: amount,
-          timestamp: new Date(),
-        });
-      } catch (error) {
-        console.error("Error adding XP:", error);
+        setTasksForSelectedDate(tasks);
       }
+    } catch (error) {
+      console.error("Error fetching tasks for selected date:", error);
     }
   };
 
   return (
-    <React.Fragment>
-      <div className="container">
-        <div className="exp-container pt-5 pb-5">
-          <div className="exp-content">
-            <span className="level-text">Level: {level}</span>
-            <progress
-              className="exp-bar"
-              value={exp ? exp % 100 : 0}
-              max={100}
-            ></progress>
-            <span className="xp-text">{xp}</span>
+    <div className="container">
+      <div className="exp-container pt-5 pb-5">
+        <div className="exp-content">
+          <span className="level-text">Level: {level}</span>
+          <progress
+            className="exp-bar"
+            value={exp ? exp % 100 : 0}
+            max={100}
+          ></progress>
+          <span className="xp-text">{xp}</span>
+        </div>
+
+        <div className="icons d-flex gap-3 align-items-center">
+          <div className="bell-container position-relative">
+            <FaBell
+              className="icon notif"
+              size={22}
+              onClick={toggleNotifFloating}
+            />
+            {(dueNotifications.length > 0 || xpNotifications.length > 0) && (
+              <div className="notification-dot"></div>
+            )}
           </div>
-          <div className="icons">
-            <div className="bell-container">
-              <FaBell
-                className="icon notif"
-                size={22}
-                onClick={toggleFloating}
+          <div className="calendar-icon">
+            <FontAwesomeIcon
+              icon={faCalendarAlt}
+              size="lg"
+              className="icon notif"
+              onClick={toggleCalFloating}
+            />
+          </div>
+        </div>
+      </div>
+
+      {isNotifFloating && (
+        <div className="floating-popup">
+          <div className="popup-header">
+            <h3>Notifications</h3>
+            <button
+              onClick={toggleNotifFloating}
+              className="close-btn"
+            ></button>
+          </div>
+          <hr />
+          <h5>Due Tasks</h5>
+          <div className="todo-list">
+            {dueNotifications.length === 0 ? (
+              <p>No upcoming tasks within a day.</p>
+            ) : (
+              dueNotifications.map((note, index) => (
+                <div key={index} className="todo-card">
+                  <h5 className="task-title">
+                    <FontAwesomeIcon
+                      icon={faTasks}
+                      className="pe-2"
+                      size="sm"
+                    />
+                    {note.title}
+                  </h5>
+                  <p className="due-date-time">
+                    Due on {note.date} at {note.time}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+
+          <hr />
+          <h5>XP Notifications</h5>
+          <div className="todo-list">
+            {xpNotifications.length === 0 ? (
+              <p>No recent XP updates.</p>
+            ) : (
+              xpNotifications.map((note, index) => (
+                <div key={index} className="todo-card">
+                  <h5 className="task-title">
+                    <FontAwesomeIcon
+                      icon={faTasks}
+                      className="pe-2"
+                      size="sm"
+                    />
+                    {note.title}
+                  </h5>
+                  <p className="due-date-time">
+                    Earned on {note.date} at {note.time}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {isCalFloating && (
+        <div className="floating-calendar-popup">
+          <div className="popup-header">
+            <h3>Calendar</h3>
+            <button onClick={toggleCalFloating} className="close-btn"></button>
+          </div>
+          <div className="calendar-body d-flex">
+            <div className="calendar-monthly">
+              <Calendar
+                onChange={handleCalendarChange}
+                value={selectedDate}
+                tileClassName={tileClassName}
               />
-              {(dueNotifications.length > 0 || xpNotifications.length > 0) && (
-                <div className="notification-dot"></div>
+              {tasksForSelectedDate.length > 0 && (
+                <div className="tasks-for-selected-date">
+                  <h5>Tasks for {format(selectedDate, "MMMM d, yyyy")}</h5>
+                  <ul>
+                    {tasksForSelectedDate.map((task, index) => (
+                      <li key={index}>{task.title}</li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           </div>
         </div>
-
-        {isFloating && (
-          <div className="floating-popup">
-            <div className="popup-header">
-              <h3>Notifications</h3>
-              <button onClick={toggleFloating} className="close-btn"></button>
-            </div>
-            <hr />
-            <h5>Due Tasks</h5>
-
-            <div className="todo-list">
-              {dueNotifications.length === 0 ? (
-                <p>No upcoming tasks within a day.</p>
-              ) : (
-                dueNotifications.map((note, index) => (
-                  <div
-                    key={index}
-                    className="todo-card"
-                    onClick={() => handleNotificationClick(index, "due")}
-                  >
-                    <div className="todo-card-content">
-                      <h5 className="task-title">
-                        <FontAwesomeIcon
-                          icon={faTasks}
-                          className="icon notif pe-2"
-                          size="sm"
-                        />
-                        {note.title}
-                      </h5>
-                      <p className="due-date-time">
-                        Due on {note.date} at {note.time}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <hr />
-            <h5>XP Notifications</h5>
-            <div className="todo-list">
-              {xpNotifications.length === 0 ? (
-                <p>No recent XP updates.</p>
-              ) : (
-                xpNotifications.map((note, index) => (
-                  <div
-                    key={index}
-                    className="todo-card"
-                    onClick={() => handleNotificationClick(index, "xp")}
-                  >
-                    <div className="todo-card-content">
-                      <h5 className="task-title">
-                        <FontAwesomeIcon
-                          icon={faTasks}
-                          className="icon notif pe-2"
-                          size="sm"
-                        />
-                        {note.title}
-                      </h5>
-                      <p className="due-date-time">
-                        Earned on {note.date} at {note.time}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </React.Fragment>
+      )}
+    </div>
   );
 }
