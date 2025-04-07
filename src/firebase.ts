@@ -19,7 +19,14 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 const firestore = getFirestore(app);
+<<<<<<< HEAD
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 export { auth, db, firestore, googleProvider, facebookProvider, createUserWithEmailAndPassword, signInWithPopup, sendEmailVerification, firebaseConfig };
+=======
+const db = getFirestore(app); // ✅ Changed from firestore to db
+const googleProvider = new GoogleAuthProvider();
+export { auth,db, firestore, googleProvider, createUserWithEmailAndPassword, signInWithPopup, firebaseConfig };
+//firebase.ts
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a

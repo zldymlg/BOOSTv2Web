@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useCallback } from "react";
 import "./MindFlow.css";
 import { IoIosArrowBack } from "react-icons/io";
@@ -12,12 +13,20 @@ import ReactFlow, {
   Edge,
   Node,
 } from "reactflow";
+=======
+import React from "react";
+import "./MindFlow.css";
+import { IoIosArrowBack } from "react-icons/io";
+import { Save } from "lucide-react";
+import ReactFlow, { Controls, Background } from "reactflow";
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
 import "reactflow/dist/style.css";
 
 interface MindFlowProps {
   onBack: () => void;
 }
 
+<<<<<<< HEAD
 const MessageModal = ({ message, onClose }: { message: string; onClose: () => void }) => (
   <div className="message-modal">
     <div className="message-modal-content">
@@ -51,8 +60,38 @@ export default function MindFlow({ onBack }: MindFlowProps) {
   const onConnect = useCallback(
     (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges]
+=======
+const initialNodes = [
+  { id: "1", position: { x: 0, y: 0 }, data: { label: "Start" }, type: "input" },
+  { id: "2", position: { x: 200, y: 100 }, data: { label: "Process" } },
+  { id: "3", position: { x: 400, y: 200 }, data: { label: "End" }, type: "output" }
+];
+
+const initialEdges = [
+  { id: "e1-2", source: "1", target: "2" },
+  { id: "e2-3", source: "2", target: "3" }
+];
+
+export default function MindFlow({ onBack }: MindFlowProps) {
+  return (
+    <React.Fragment>
+    <div className="mindflow-container">
+      <IoIosArrowBack size={30} onClick={onBack} style={{cursor:"pointer"}}/>
+      <span id="title">Mind Flow</span>
+      <Save size={30}/>
+    </div>
+    {/* mindflow here */}
+    <div id="flow">
+      <ReactFlow nodes={initialNodes} edges={initialEdges} fitView>
+        <Controls />
+        <Background />
+      </ReactFlow>
+    </div>
+    </React.Fragment>
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a
   );
 
+<<<<<<< HEAD
   const isMobile = window.innerWidth <= 768; 
   const connectorStrokeWidth = isMobile ? 40 : 20; 
 
@@ -271,3 +310,5 @@ export default function MindFlow({ onBack }: MindFlowProps) {
     </React.Fragment>
   );
 }
+=======
+>>>>>>> 6d4d9c9ac10daa2900f3b7d56d33052b38a9e31a

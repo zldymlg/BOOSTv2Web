@@ -1,58 +1,8 @@
 import React, { useState } from "react";
 import "./LoginSecurity.css";
-import { signInWithPopup, deleteUser } from "firebase/auth";
-import { auth, facebookProvider, googleProvider } from "../firebase";
-// note: connect the facebook provider
-import { User } from "firebase/auth";
 
 export default function LogSec() {
   const [showInput, setShowInput] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-
-  // Facebook Login
-  const handleFacebookLogin = () => {
-    signInWithPopup(auth, facebookProvider)
-      .then((result) => {
-        setUser(result.user);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  // Google Login
-  const handleGoogleLogin = () => {
-    signInWithPopup(auth, googleProvider)
-      .then((result) => {
-        setUser(result.user);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  // Account Deletion Function
-  const handleDeleteAccount = async () => {
-    if (!auth.currentUser) {
-      alert("No user is logged in.");
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete your account? This action is irreversible!"
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await deleteUser(auth.currentUser);
-      alert("Your account has been deleted.");
-      setUser(null);
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      alert("Error deleting account. Please log in again and try.");
-    }
-  };
 
   return (
     <React.Fragment>
@@ -72,11 +22,7 @@ export default function LogSec() {
             {showInput ? "Confirm" : ""}
           </li>
           {showInput && (
-            <input
-              type="text"
-              className="col-sm-auto"
-              placeholder="Enter text..."
-            />
+            <input type="text" className="col-sm-auto" placeholder="Enter text..." />
           )}
         </div>
         <div className="row pt-2">
@@ -86,22 +32,11 @@ export default function LogSec() {
         <h3>Social Media Login</h3>
         <ul className="row gap-2">
           <li className="w-50 btn">
-            <button
-              className="btn btn-primary btn-md"
-              onClick={handleFacebookLogin}
-            >
-              Facebook
-            </button>
+            <FaFacebookSquare size="30" />
+            Facebook
           </li>
           <li className="w-50 btn">Instagram</li>
-          <li className="w-50 btn">
-            <button
-              className="btn btn-primary btn-md"
-              onClick={handleGoogleLogin}
-            >
-              Google
-            </button>
-          </li>
+          <li className="w-50 btn">Gmail</li>
         </ul>
 
         {user && (
@@ -113,16 +48,10 @@ export default function LogSec() {
 
         <div className="row gap-5 mt-5">
           <li className="w-50 btn">Download Data</li>
-          <li className="w-50 btn">
-            <button
-              className="btn btn-danger btn-md"
-              onClick={handleDeleteAccount}
-            >
-              Delete Account
-            </button>
-          </li>
+          <li className="w-50 btn">Account Deletion</li>
         </div>
       </div>
     </React.Fragment>
   );
 }
+//LoginSecurity.tsx
