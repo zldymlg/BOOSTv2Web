@@ -52,17 +52,15 @@ export default function General() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-  
           console.log("Latitude:", latitude);
           console.log("Longitude:", longitude);
-  
-          fetch(
-            https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en
-          )
-            .then((res) => res.json())
+          
+          const URL = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`;
+          fetch (URL)
+          .then((res) => res.json())
             .then((data) => {
               console.log("Timezone data:", data);
-              updateDateTime(); // Optional kung may gagawin ka pa sa data
+              updateDateTime(); // Optional: gamitin ang data kung kinakailangan
             })
             .catch((err) => console.error("Error fetching timezone:", err));
         },
@@ -205,7 +203,9 @@ export default function General() {
             {showDateInput && !autoUpdate ? (
               <input
                 type="date"
-                onChange={(e) => setDate(formatDate(new Date(e.target.value)))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setDate(formatDate(new Date(e.target.value)))
+                }
                 disabled={autoUpdate}
                 className="form-control w-50"
               />
@@ -224,7 +224,7 @@ export default function General() {
             {showTimeInput && !autoUpdate ? (
               <input
                 type="time"
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const [hour, minute] = e.target.value.split(":");
                   const dateObj = new Date();
                   dateObj.setHours(parseInt(hour), parseInt(minute));
