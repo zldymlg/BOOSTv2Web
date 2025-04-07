@@ -236,6 +236,8 @@ body {
 .task-card {
   background: #2ecc71;
   /* Light green */
+  border-left: 4px solid #f4c542;
+  border-radius: 6px;
   color: white;
   border-radius: 12px;
   padding: 1rem;

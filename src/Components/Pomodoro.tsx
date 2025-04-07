@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import "./Pomodoro.css";
 import { firestore, auth } from "../firebase";
+import { format } from "date-fns";
 
 import {
   collection,
@@ -24,6 +25,7 @@ import {
   serverTimestamp,
   getDocs,
   increment,
+  getDoc,
 } from "firebase/firestore";
 
 interface Task {
@@ -209,6 +211,39 @@ const PomodoroTimer: React.FC = () => {
         });
       } else {
         console.warn("No existing EXP document found for user.");
+      // Reference the user's document and the exp field within it
+      const userDocRef = doc(firestore, "users", userId);
+
+      // Get the current EXP value from the user document
+      const userDocSnapshot = await getDoc(userDocRef);
+
+      if (userDocSnapshot.exists()) {
+        const currentExp = userDocSnapshot.data()?.exp || 0;
+
+        // Add the new EXP earned to the current EXP
+        const updatedExp = currentExp + expEarned;
+
+        // Update the EXP field within the user's document
+        await updateDoc(userDocRef, {
+          exp: updatedExp,
+        });
+
+        // Log the XP update with the timestamp and amount
+        const xpHistoryRef = collection(
+          firestore,
+          "users",
+          userId,
+          "xpHistory"
+        );
+
+        await addDoc(xpHistoryRef, {
+          xpAdded: expEarned,
+          timestamp: new Date(),
+          formattedDate: format(new Date(), "MMMM d, yyyy"),
+          formattedTime: format(new Date(), "hh:mm a"),
+        });
+      } else {
+        console.warn("User document not found.");
       }
     } catch (error) {
       console.error("Error updating task or EXP:", error);
@@ -223,8 +258,14 @@ const PomodoroTimer: React.FC = () => {
     setTasksCompletedToday((prev) => prev + 1);
   };
 
-  const stopTimer = () => {
+  const stopTimer = (currentTask: Task | null = null) => {
     setIsRunning(false);
+
+    // Check if the current task is completed
+    if (currentTask?.completed) {
+      console.log("Task completed, stopping the timer.");
+    }
+
     if (animationFrameRef.current !== null) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
@@ -347,6 +388,8 @@ const PomodoroTimer: React.FC = () => {
       newRingtonePlayer.pause();
       newRingtonePlayer.currentTime = 0;
     }, 3000);
+      newRingtonePlayer.currentTime = 1000;
+    }, 9000);
   };
 
   const getCurrentSessionDuration = () => {
@@ -566,6 +609,10 @@ const PomodoroTimer: React.FC = () => {
           setMode("pomodoro");
           setIsRunning(false); // Explicitly stop the timer
 
+          setTimeLeft(pomodoroDuration); // Reset to default Pomodoro time
+          setMode("pomodoro");
+          setIsRunning(false); // Explicitly stop the timer
+          stopTimer();
           // Cancel any ongoing animations
           if (animationFrameRef.current) {
             cancelAnimationFrame(animationFrameRef.current);
@@ -838,6 +885,7 @@ const PomodoroTimer: React.FC = () => {
                 ? "bg-warning"
                 : "bg-success"
             }`}
+            } `}
           >
             <Form>
               <Form.Group>
@@ -933,6 +981,13 @@ const PomodoroTimer: React.FC = () => {
                 color: "white",
                 textDecoration: t.completed ? "line-through" : "none", // Strikethrough completed tasks
                 opacity: t.completed ? 0.6 : 1, // Lower opacity for completed tasks
+              className={`mt-3 p-3 rounded d-flex flex-row align-items-start bg-success shadow text-start  ${
+                mode === "longBreak" || mode === "shortBreak"
+                  ? "bg-warning"
+                  : "bg-success"
+              } `}
+              style={{
+                color: "white",
               }}
               id="bg-success"
             >
