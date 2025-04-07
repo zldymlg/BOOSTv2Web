@@ -116,3 +116,109 @@
   flex-wrap: wrap;
   gap: 1rem;
 }
+
+/* Modal Backdrop */
+.modal-bg,
+.modal-bg-deck,
+.modal-bg-topic {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 90%;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Modal Buttons */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Input Fields */
+.modal-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+/* Highlighted Text */
+.highlight {
+  background-color: yellow;
+  font-weight: bold;
+}
+
+/* Flashcard Container */
+#flashcard-container {
+  display: flex;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+/* Flashcard Card */
+#flashcard-card {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  margin-right: 15px;
+  padding: 15px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+#flashcard-card:hover {
+  transform: scale(1.05);
+}
+
+/* Flashcard Title */
+#flashcard-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Flashcard Description */
+#flashcard-description {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* Search Input */
+#searchinput {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  font-size: 16px;
+}
+
+/* Search Button */
+#search {
+  background-color: #f8f9fa;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#search:hover {
+  background-color: #e2e6ea;
+}

@@ -128,7 +128,7 @@ export default function FlashcardContent({
           </div>
         ))}
         <div
-          className="d-flex align-items-center justify-content-center mt-3 mb-5 pb-5"
+          className="d-flex align-items-center justify-content-center mt-3 mb-5"
           style={{ cursor: "pointer" }}
           onClick={() => setShowCreateModal(true)}
         >
