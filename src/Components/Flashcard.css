@@ -117,7 +117,6 @@
   gap: 1rem;
 }
 
-/* Modal Backdrop */
 .modal-bg,
 .modal-bg-deck,
 .modal-bg-topic {
@@ -133,7 +132,6 @@
   z-index: 1050;
 }
 
-/* Modal Content */
 .modal-content {
   background-color: #ffffff;
   border-radius: 15px;
@@ -144,14 +142,12 @@
   text-align: center;
 }
 
-/* Modal Buttons */
 .modal-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
 
-/* Input Fields */
 .modal-input {
   width: 100%;
   padding: 10px;
@@ -160,20 +156,17 @@
   font-size: 16px;
 }
 
-/* Highlighted Text */
 .highlight {
   background-color: yellow;
   font-weight: bold;
 }
 
-/* Flashcard Container */
 #flashcard-container {
   display: flex;
   overflow-x: auto;
   padding: 10px 0;
 }
 
-/* Flashcard Card */
 #flashcard-card {
   background-color: #f8f9fa;
   border: 1px solid #ddd;
@@ -188,20 +181,17 @@
   transform: scale(1.05);
 }
 
-/* Flashcard Title */
 #flashcard-title {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 10px;
 }
 
-/* Flashcard Description */
 #flashcard-description {
   font-size: 14px;
   color: #6c757d;
 }
 
-/* Search Input */
 #searchinput {
   padding: 10px;
   border: 1px solid #ccc;
@@ -209,7 +199,6 @@
   font-size: 16px;
 }
 
-/* Search Button */
 #search {
   background-color: #f8f9fa;
   border: 1px solid #ccc;
