@@ -2,14 +2,18 @@ import React, { useState } from "react";
 import "./LoginSecurity.css";
 import { signInWithPopup, deleteUser } from "firebase/auth";
 import { auth, facebookProvider, googleProvider } from "../firebase";
-// note: connect the facebook provider
 import { User } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+
 
 export default function LogSec() {
-  const [showInput, setShowInput] = useState(false);
+  const [showInput, setShowInput]  = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
-  // Facebook Login
+
+  const db = getFirestore();
+
+ 
   const handleFacebookLogin = () => {
     signInWithPopup(auth, facebookProvider)
       .then((result) => {
@@ -20,7 +24,7 @@ export default function LogSec() {
       });
   };
 
-  // Google Login
+
   const handleGoogleLogin = () => {
     signInWithPopup(auth, googleProvider)
       .then((result) => {
@@ -31,7 +35,7 @@ export default function LogSec() {
       });
   };
 
-  // Account Deletion Function
+ 
   const handleDeleteAccount = async () => {
     if (!auth.currentUser) {
       alert("No user is logged in.");
@@ -51,6 +55,51 @@ export default function LogSec() {
     } catch (error) {
       console.error("Error deleting account:", error);
       alert("Error deleting account. Please log in again and try.");
+    }
+  };
+
+  
+  const handleDownloadData = async () => {
+    if (!auth.currentUser) {
+      alert("No user is logged in.");
+      return;
+    }
+  
+    const confirmDownload = window.confirm(
+      "Are you sure you want to download your data?"
+    );
+  
+    if (!confirmDownload) return;
+  
+    try {
+     
+      const userDocRef = doc(db, "users", auth.currentUser.uid);  
+      const userDocSnap = await getDoc(userDocRef);
+  
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+  
+        
+        const dataStr = JSON.stringify(userData, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+  
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = '${auth.currentUser.displayName}_data.json';  
+  
+       
+        a.click();
+  
+        
+        URL.revokeObjectURL(url);
+      } else {
+        alert("No additional data found for this user.");
+      }
+    } catch (error) {
+      console.error("Error downloading data:", error);
+      alert("There was an error downloading your data. Please try again.");
     }
   };
 
@@ -92,8 +141,7 @@ export default function LogSec() {
             >
               Facebook
             </button>
-          </li>
-          <li className="w-50 btn">Instagram</li>
+          </li>          
           <li className="w-50 btn">
             <button
               className="btn btn-primary btn-md"
@@ -112,7 +160,14 @@ export default function LogSec() {
         )}
 
         <div className="row gap-5 mt-5">
-          <li className="w-50 btn">Download Data</li>
+          <li className="w-50 btn">
+            <button
+              className="btn btn-success btn-md"
+              onClick={handleDownloadData}
+            >
+              Download Data
+            </button>
+          </li>
           <li className="w-50 btn">
             <button
               className="btn btn-danger btn-md"
