@@ -55,6 +55,7 @@ export default function General() {
             .then((res) => res.json())
             .then(() => updateDateTime())
             .catch((err) => console.error("Error fetching timezone:", err));
+          
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -70,6 +71,10 @@ export default function General() {
     setDate(formatDate(localDate));
     setTime(formatTime(localDate));
   };
+
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+
 
   return (
     <React.Fragment>
@@ -102,9 +107,49 @@ export default function General() {
           <div className="mt-5">
             <h3>Feedback and Support</h3>
             <ul className="row gap-3">
-              <li className="w-50 btn" id="gen-btn">
+            <li
+                className="w-50 btn"
+                id="gen-btn"
+                onClick={() => setShowFeedbackModal(true)}
+              >
                 Send Feedback
               </li>
+
+                {showFeedbackModal && (
+                  <div className="modal-backdrop">
+                    <div className="modal-box">
+                      <h4>Send us your Feedback</h4>
+                      <textarea
+                        className="form-control my-2"
+                        rows={4}
+                        value={feedbackText}
+                        onChange={(e) => setFeedbackText(e.target.value)}
+                        placeholder="Type your feedback here..."
+                      ></textarea>
+                      <div className="d-flex justify-content-end gap-2">
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => setShowFeedbackModal(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => {
+                            console.log("Submitted Feedback:", feedbackText); // Replace with API later
+                            alert("Thank you for your feedback!");
+                            setFeedbackText("");
+                            setShowFeedbackModal(false);
+                          }}
+                        >
+                          Submit
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
               <li className="w-50 btn" id="gen-btn">
                 <AiFillQuestionCircle size={20} className="me-2" />
                 Help
@@ -141,7 +186,8 @@ export default function General() {
               size={20}
               className="ms-2 cursor-pointer"
               onClick={() => setShowDateInput(!showDateInput)}
-            />
+            />           
+
           </div>
 
           {/* Time Display & Picker */}
