@@ -180,7 +180,20 @@ const FcTodoList: React.FC = () => {
         doc(db, "users", user.uid, "todolist", newTaskWithId.id),
         newTaskWithId
       );
+      
+      const q = query(
+        collection(db, "users", user.uid, "todolist"),
+        where("userId", "==", user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const updatedTasks: Task[] = [];
+      querySnapshot.forEach((doc) => {
+        updatedTasks.push({ id: doc.id, ...doc.data() } as Task);
+      });
+      setTasks(updatedTasks);
+      
       handleAddTaskClose();
+      
     } catch (error) {
       setError("Error adding task. Please try again later.");
       console.error("Error adding task:", error);
