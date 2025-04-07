@@ -304,15 +304,14 @@ export default function ExpNotifCal() {
                 value={selectedDate}
                 tileClassName={tileClassName}
               />
-              {tasksForSelectedDate.length > 0 && (
-                <div className="tasks-for-selected-date">
-                  <h5>Tasks for {format(selectedDate, "MMMM d, yyyy")}</h5>
-                  <ul>
-                    {tasksForSelectedDate.map((task, index) => (
-                      <li key={index}>{task.title}</li>
-                    ))}
-                  </ul>
-                </div>
+              {tasksForSelectedDate.length > 0 ? (
+                <ul>
+                  {tasksForSelectedDate.map((task, index) => (
+                    <li key={index}>{task.title}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>You're free today!</p>
               )}
             </div>
           </div>
