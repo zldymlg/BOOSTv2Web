@@ -23,6 +23,8 @@ import {
   updateDoc,
   deleteDoc,
   serverTimestamp,
+  getDocs,
+  increment,
   getDoc,
 } from "firebase/firestore";
 
@@ -195,6 +197,20 @@ const PomodoroTimer: React.FC = () => {
         expEarned = 30;
       }
 
+      // Get the first document in the exp subcollection
+      const expCollectionRef = collection(firestore, "users", userId, "exp");
+      const expSnapshot = await getDocs(expCollectionRef);
+
+      if (!expSnapshot.empty) {
+        const firstDoc = expSnapshot.docs[0];
+        const expDocRef = doc(firestore, "users", userId, "exp");
+
+        // Increment exp
+        await updateDoc(expDocRef, {
+          exp: increment(expEarned),
+        });
+      } else {
+        console.warn("No existing EXP document found for user.");
       // Reference the user's document and the exp field within it
       const userDocRef = doc(firestore, "users", userId);
 
@@ -370,6 +386,8 @@ const PomodoroTimer: React.FC = () => {
 
     setTimeout(() => {
       newRingtonePlayer.pause();
+      newRingtonePlayer.currentTime = 0;
+    }, 3000);
       newRingtonePlayer.currentTime = 1000;
     }, 9000);
   };
@@ -586,6 +604,11 @@ const PomodoroTimer: React.FC = () => {
 
         // If no tasks left, stop & reset timer
         if (updatedTasks.length === 0) {
+          stopTimer(); // Stops any running interval
+          setTimeLeft(pomodoroDuration); // Reset to default Pomodoro time
+          setMode("pomodoro");
+          setIsRunning(false); // Explicitly stop the timer
+
           setTimeLeft(pomodoroDuration); // Reset to default Pomodoro time
           setMode("pomodoro");
           setIsRunning(false); // Explicitly stop the timer
@@ -861,6 +884,7 @@ const PomodoroTimer: React.FC = () => {
               mode === "longBreak" || mode === "shortBreak"
                 ? "bg-warning"
                 : "bg-success"
+            }`}
             } `}
           >
             <Form>
@@ -948,6 +972,15 @@ const PomodoroTimer: React.FC = () => {
           .map((t, index) => (
             <Card
               key={t.id}
+              className={`mt-3 p-3 rounded d-flex flex-row align-items-start bg-success shadow text-start ${
+                mode === "longBreak" || mode === "shortBreak"
+                  ? "bg-warning"
+                  : "bg-success"
+              }`}
+              style={{
+                color: "white",
+                textDecoration: t.completed ? "line-through" : "none", // Strikethrough completed tasks
+                opacity: t.completed ? 0.6 : 1, // Lower opacity for completed tasks
               className={`mt-3 p-3 rounded d-flex flex-row align-items-start bg-success shadow text-start  ${
                 mode === "longBreak" || mode === "shortBreak"
                   ? "bg-warning"
