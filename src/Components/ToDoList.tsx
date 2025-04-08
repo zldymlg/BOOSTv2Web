@@ -240,7 +240,7 @@ const FcTodoList: React.FC = () => {
     const diff = dueDate.getTime() - now.getTime();
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     if (minutes < 0) return "Overdue";
-    return `${minutes} Min Left`;
+    return ${minutes} Min Left;
   };
 
   const renderTaskCard = (task: Task) => (
