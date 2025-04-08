@@ -1,7 +1,10 @@
+<<<<<< main
 import React, { useEffect, useState } from "react";
 import { FaBell, FaCalendarAlt } from "react-icons/fa";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+
+import { useEffect, useState } from "react";
 import { faTasks, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaBell } from "react-icons/fa";
@@ -30,12 +33,15 @@ export default function ExpNotifCal() {
     const fetchExp = async () => {
 
   const [dueNotifications, setDueNotifications] = useState<any[]>([]);
+  const [overdueNotifications, setOverdueNotifications] = useState<any[]>([]);
   const [xpNotifications, setXpNotifications] = useState<any[]>([]);
   const [isNotifFloating, setIsNotifFloating] = useState(false);
   const [isCalFloating, setIsCalFloating] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [tasksDueDates, setTasksDueDates] = useState<Date[]>([]);
   const [tasksForSelectedDate, setTasksForSelectedDate] = useState<any[]>([]);
+  const [lastSeenNotifTime, setLastSeenNotifTime] = useState<Date | null>(null);
+  const [latestNotifTime, setLatestNotifTime] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchExpAndTodoList = async () => {
@@ -94,17 +100,19 @@ export default function ExpNotifCal() {
             setXp(`${currentExp % 100}/100XP`);
           }
 
-          // Query the user's todolist subcollection
           const todoQuery = query(
             collection(db, "users", user.uid, "todolist")
           );
           const querySnapshot = await getDocs(todoQuery);
+
           const upcomingTasks: any[] = [];
+          const overdueTasks: any[] = [];
           const taskDueDates: Date[] = [];
 
           const now = new Date();
           const startOfToday = new Date(now);
           startOfToday.setHours(0, 0, 0, 0);
+
           const oneDayLater = new Date(now);
           oneDayLater.setDate(now.getDate() + 1);
 
@@ -113,31 +121,39 @@ export default function ExpNotifCal() {
             if (todoData.dueDate) {
               const dueDate = todoData.dueDate.toDate();
               if (dueDate >= startOfToday && dueDate <= oneDayLater) {
-                upcomingTasks.push({
-                  title: todoData.title,
-                  dueDate: dueDate,
-                });
+                upcomingTasks.push({ title: todoData.title, dueDate });
+                taskDueDates.push(dueDate);
+              } else if (dueDate < now) {
+                overdueTasks.push({ title: todoData.title, dueDate });
                 taskDueDates.push(dueDate);
               }
             }
           });
 
-          upcomingTasks.sort((a, b) => a.dueDate - b.dueDate);
+          // Format overdue tasks
+          overdueTasks.sort((a, b) => b.dueDate - a.dueDate);
+          const overdueFormatted = overdueTasks.map((task) => ({
+            title: task.title,
+            date: format(task.dueDate, "MMMM d, yyyy"),
+            time: format(task.dueDate, "hh:mm a"),
+          }));
 
-          if (upcomingTasks.length > 0) {
-            const soonest = upcomingTasks[0];
-            const formattedDate = format(soonest.dueDate, "MMMM d, yyyy");
-            const formattedTime = format(soonest.dueDate, "hh:mm a");
-            setDueNotifications([
-              {
-                title: soonest.title,
-                date: formattedDate,
-                time: formattedTime,
-              },
-            ]);
-          } else {
-            setDueNotifications([]);
-          }
+          // Format upcoming tasks
+          upcomingTasks.sort((a, b) => b.dueDate - a.dueDate);
+          const upcomingFormatted =
+            upcomingTasks.length > 0
+              ? [
+                  {
+                    title: upcomingTasks[0].title,
+                    date: format(upcomingTasks[0].dueDate, "MMMM d, yyyy"),
+                    time: format(upcomingTasks[0].dueDate, "hh:mm a"),
+                  },
+                ]
+              : [];
+
+          setDueNotifications(upcomingFormatted);
+          setOverdueNotifications(overdueFormatted);
+          setTasksDueDates(taskDueDates);
 
           const xpHistoryRef = collection(db, "users", user.uid, "xpHistory");
           const xpHistoryQuery = query(
@@ -163,7 +179,26 @@ export default function ExpNotifCal() {
           });
 
           setXpNotifications(xpNotifs);
-          setTasksDueDates(taskDueDates);
+
+          // Find the latest notification date
+          let latestNotifDate: Date | null = null;
+
+          // Find latest XP notification
+          if (xpHistorySnapshot.size > 0) {
+            const firstXp = xpHistorySnapshot.docs[0].data();
+            const xpDate = firstXp.timestamp.toDate();
+            if (!latestNotifDate || xpDate > latestNotifDate)
+              latestNotifDate = xpDate;
+          }
+
+          // Find latest due/overdue task notification
+          [...upcomingTasks, ...overdueTasks].forEach((task) => {
+            const dueDate = task.dueDate;
+            if (!latestNotifDate || dueDate > latestNotifDate)
+              latestNotifDate = dueDate;
+          });
+
+          setLatestNotifTime(latestNotifDate);
         }
       } catch (error) {
         console.error("Error fetching user data or to-do list:", error);
@@ -174,8 +209,10 @@ export default function ExpNotifCal() {
   }, []);
 
   const toggleNotifFloating = () => {
+    const now = new Date();
     setIsNotifFloating(!isNotifFloating);
     setIsCalFloating(false);
+    setLastSeenNotifTime(now); // 👈 update last seen time
   };
 
   const toggleCalFloating = () => {
@@ -183,12 +220,10 @@ export default function ExpNotifCal() {
     setIsNotifFloating(false);
   };
 
-  // Helper function to extract year, month, and day for comparison
   const getDateKey = (date: Date) => {
     return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
   };
 
-  // Function to highlight the dates with due tasks
   const tileClassName = ({ date }: { date: Date }) => {
     return tasksDueDates.some(
       (taskDate) => getDateKey(taskDate) === getDateKey(date)
@@ -197,12 +232,6 @@ export default function ExpNotifCal() {
       : "";
   };
 
-  const handleCalendarChange = (newDate: Date) => {
-    setSelectedDate(newDate);
-    fetchTasksForSelectedDate(newDate); // Fetch tasks for the new selected date
-  };
-
-  // Fetch tasks for the selected date
   const fetchTasksForSelectedDate = async (date: Date) => {
     try {
       const auth = getAuth();
@@ -263,9 +292,10 @@ export default function ExpNotifCal() {
               size={22}
               onClick={toggleNotifFloating}
             />
-            {(dueNotifications.length > 0 || xpNotifications.length > 0) && (
-              <div className="notification-dot"></div>
-            )}
+            {latestNotifTime &&
+              (!lastSeenNotifTime || latestNotifTime > lastSeenNotifTime) && (
+                <div className="notification-dot"></div>
+              )}
           </div>
           <div className="calendar-icon">
             <FontAwesomeIcon
@@ -281,19 +311,39 @@ export default function ExpNotifCal() {
       {isNotifFloating && (
         <div className="floating-popup">
           <div className="popup-header">
-            <h3>Notifications</h3>
+            <h3 className="fw-bold">Notifications</h3>
             <button
               onClick={toggleNotifFloating}
               className="close-btn"
             ></button>
           </div>
-          <hr />
-          <h5>Due Tasks</h5>
           <div className="todo-list">
             {dueNotifications.length === 0 ? (
-              <p>No upcoming tasks within a day.</p>
+              <p></p>
             ) : (
               dueNotifications.map((note, index) => (
+                <div key={index} className="todo-card">
+                  <h5 className="task-title">
+                    <FontAwesomeIcon
+                      icon={faTasks}
+                      className="pe-2"
+                      size="sm"
+                    />
+
+                    {note.title}
+                  </h5>
+                  <p className="due-date-time">
+                    Due on {note.date} at {note.time}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="todo-list">
+            {overdueNotifications.length === 0 ? (
+              <p></p>
+            ) : (
+              overdueNotifications.map((note, index) => (
                 <div key={index} className="todo-card">
                   <h5 className="task-title">
                     <FontAwesomeIcon
@@ -304,18 +354,16 @@ export default function ExpNotifCal() {
                     {note.title}
                   </h5>
                   <p className="due-date-time">
-                    Due on {note.date} at {note.time}
+                    Was due on {note.date} at {note.time}
                   </p>
                 </div>
               ))
             )}
           </div>
 
-          <hr />
-          <h5>XP Notifications</h5>
           <div className="todo-list">
             {xpNotifications.length === 0 ? (
-              <p>No recent XP updates.</p>
+              <p></p>
             ) : (
               xpNotifications.map((note, index) => (
                 <div key={index} className="todo-card">
@@ -346,7 +394,10 @@ export default function ExpNotifCal() {
           <div className="calendar-body d-flex">
             <div className="calendar-monthly">
               <Calendar
-                onChange={handleCalendarChange}
+                onClickDay={(value: Date) => {
+                  setSelectedDate(value);
+                  fetchTasksForSelectedDate(value);
+                }}
                 value={selectedDate}
                 tileClassName={tileClassName}
               />
