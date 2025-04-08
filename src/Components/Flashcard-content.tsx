@@ -7,7 +7,7 @@ import "./Flashcard-content.css";
 import { Modal, Button, Form } from "react-bootstrap";
 import { MdDeleteForever } from "react-icons/md";
 import StartFlashcards from "./Flashcard-QnA.tsx";
-import { db, auth } from "../firebase"; // Ensure Firebase is configured
+import { db, auth } from "../firebase";
 import {
   collection,
   addDoc,
@@ -55,12 +55,16 @@ export default function FlashcardContent({
     if (!cardsCollection) return;
 
     const fetchCards = async () => {
-      const querySnapshot = await getDocs(cardsCollection);
-      const fetchedCards = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Flashcard[];
-      setCards(fetchedCards);
+      try {
+        const querySnapshot = await getDocs(cardsCollection);
+        const fetchedCards = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Flashcard[];
+        setCards(fetchedCards);
+      } catch (error) {
+        console.error("Error fetching cards:", error);
+      }
     };
 
     fetchCards();
@@ -70,11 +74,15 @@ export default function FlashcardContent({
     if (!cardsCollection || newQuestion.trim() === "" || newAnswer.trim() === "") return;
 
     const newCard = { question: newQuestion, answer: newAnswer };
-    const docRef = await addDoc(cardsCollection, newCard);
-    setCards([...cards, { id: docRef.id, ...newCard }]);
-    setNewQuestion("");
-    setNewAnswer("");
-    setShowCreateModal(false);
+    try {
+      const docRef = await addDoc(cardsCollection, newCard);
+      setCards([...cards, { id: docRef.id, ...newCard }]);
+      setNewQuestion("");
+      setNewAnswer("");
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error("Error adding card:", error);
+    }
   };
 
   const openEditModal = (index: number) => {
@@ -89,13 +97,17 @@ export default function FlashcardContent({
 
     const cardId = cards[editIndex].id;
     const cardRef = doc(db, `users/${user!.uid}/flashcard/${topicId}/decks/${deckId}/cards`, cardId);
-    await updateDoc(cardRef, { question: newQuestion, answer: newAnswer });
+    try {
+      await updateDoc(cardRef, { question: newQuestion, answer: newAnswer });
 
-    const updatedCards = [...cards];
-    updatedCards[editIndex] = { id: cardId, question: newQuestion, answer: newAnswer };
-    setCards(updatedCards);
-    setEditIndex(null);
-    setShowEditModal(false);
+      const updatedCards = [...cards];
+      updatedCards[editIndex] = { id: cardId, question: newQuestion, answer: newAnswer };
+      setCards(updatedCards);
+      setEditIndex(null);
+      setShowEditModal(false);
+    } catch (error) {
+      console.error("Error updating card:", error);
+    }
   };
 
   const deleteCard = async (index: number) => {
@@ -103,9 +115,12 @@ export default function FlashcardContent({
 
     const cardId = cards[index].id;
     const cardRef = doc(db, `users/${user!.uid}/flashcard/${topicId}/decks/${deckId}/cards`, cardId);
-    await deleteDoc(cardRef);
-
-    setCards(cards.filter((_, i) => i !== index));
+    try {
+      await deleteDoc(cardRef);
+      setCards(cards.filter((_, i) => i !== index));
+    } catch (error) {
+      console.error("Error deleting card:", error);
+    }
   };
 
   if (isStarting) {

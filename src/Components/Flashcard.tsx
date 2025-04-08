@@ -348,7 +348,6 @@ export default function Flashcard() {
         </div>
       )}
 
-      {/* Delete Topic Modal */}
       {showDeleteModal && (
         <div className="modal-bg">
           <div className="modal-content bg-light p-4 rounded-5">
