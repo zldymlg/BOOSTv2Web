@@ -14,6 +14,7 @@ import {
   deleteDoc,
   updateDoc,
   serverTimestamp,
+  getDocs,
 } from "firebase/firestore";
 
 type ActiveComponentState =
@@ -58,9 +59,9 @@ export default function Flashcard() {
     const topicsCollectionRef = collection(firestore, "users", uid, "flashcard");
     const q = query(topicsCollectionRef);
 
-    onSnapshot(q, (querySnapshot) => {
+    const unsubscribeTopics = onSnapshot(q, async (querySnapshot) => {
       const loadedTopics: any[] = [];
-      querySnapshot.forEach((doc) => {
+      for (const doc of querySnapshot.docs) {
         const topicData = doc.data();
         const decksCollectionRef = collection(
           firestore,
@@ -70,18 +71,17 @@ export default function Flashcard() {
           doc.id,
           "decks"
         );
-        const decksQuery = query(decksCollectionRef);
-
-        onSnapshot(decksQuery, (decksSnapshot) => {
-          const decks = decksSnapshot.docs.map((deckDoc) => ({
-            id: deckDoc.id,
-            ...deckDoc.data(),
-          }));
-          loadedTopics.push({ id: doc.id, ...topicData, decks });
-        });
-      });
+        const decksSnapshot = await getDocs(decksCollectionRef);
+        const decks = decksSnapshot.docs.map((deckDoc) => ({
+          id: deckDoc.id,
+          ...deckDoc.data(),
+        }));
+        loadedTopics.push({ id: doc.id, ...topicData, decks });
+      }
       setTopics(loadedTopics);
     });
+
+    return () => unsubscribeTopics();
   };
 
   const handleCreateTopic = async () => {
@@ -94,7 +94,11 @@ export default function Flashcard() {
 
     try {
       const topicsCollectionRef = collection(firestore, "users", user.uid, "flashcard");
-      await addDoc(topicsCollectionRef, newTopic);
+      const docRef = await addDoc(topicsCollectionRef, newTopic);
+      setTopics((prevTopics) => [
+        ...prevTopics,
+        { id: docRef.id, ...newTopic, decks: [] },
+      ]);
       setNewTopicName("");
       setShowAddTopicModal(false);
     } catch (error) {
@@ -120,6 +124,9 @@ export default function Flashcard() {
     try {
       const topicDocRef = doc(firestore, "users", user.uid, "flashcard", currentTopic.id);
       await deleteDoc(topicDocRef);
+      setTopics((prevTopics) =>
+        prevTopics.filter((topic) => topic.id !== currentTopic.id)
+      );
       setShowDeleteModal(false);
     } catch (error) {
       console.error("Error deleting topic:", error);
@@ -138,7 +145,19 @@ export default function Flashcard() {
     try {
       const topicDocRef = doc(firestore, "users", user.uid, "flashcard", selectedTopicId);
       const decksCollectionRef = collection(topicDocRef, "decks");
-      await addDoc(decksCollectionRef, newDeck);
+      const deckDocRef = await addDoc(decksCollectionRef, newDeck);
+
+      setTopics((prevTopics) =>
+        prevTopics.map((topic) =>
+          topic.id === selectedTopicId
+            ? {
+                ...topic,
+                decks: [...topic.decks, { id: deckDocRef.id, ...newDeck }],
+              }
+            : topic
+        )
+      );
+
       setNewDeckName("");
       setNewDeckDescription("");
       setShowAddDeckModal(false);
@@ -151,6 +170,17 @@ export default function Flashcard() {
     try {
       const deckDocRef = doc(firestore, "users", user.uid, "flashcard", topicId, "decks", deckId);
       await deleteDoc(deckDocRef);
+
+      setTopics((prevTopics) =>
+        prevTopics.map((topic) =>
+          topic.id === topicId
+            ? {
+                ...topic,
+                decks: topic.decks.filter((deck) => deck.id !== deckId),
+              }
+            : topic
+        )
+      );
     } catch (error) {
       console.error("Error deleting deck:", error);
     }
