@@ -175,11 +175,18 @@
   width: auto;
 }
 
+.react-calendar {
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
 
 .react-calendar__tile.highlight {
   background-color: red;
   border-radius: 50%;
   color: white;
+
 }
 
 
