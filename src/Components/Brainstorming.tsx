@@ -56,6 +56,7 @@ export default function Brainstorming() {
               <span className="pe-3">Date Created</span>
             </div>
           </div>
+
         </>
       ) : activeComponent === "mindmap" ? (
         <Mindmap onBack={() => setActiveComponent("brainstorming")} />

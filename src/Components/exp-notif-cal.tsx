@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { faTasks, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaBell } from "react-icons/fa";
@@ -352,12 +352,25 @@ export default function ExpNotifCal() {
                 value={selectedDate}
                 tileClassName={tileClassName}
               />
+              <h4>Schedule</h4>
               {tasksForSelectedDate.length > 0 ? (
-                <ul>
-                  {tasksForSelectedDate.map((task, index) => (
-                    <li key={index}>{task.title}</li>
-                  ))}
-                </ul>
+                <React.Fragment>
+                  <div className="row">
+                    {tasksForSelectedDate.map((task, index) => (
+                      <div className="col-md-4 mb-3" key={index}>
+                        <div className="card shadow-sm h-100">
+                          <div className="card-body">
+                            <h5 className="card-title">{task.title}</h5>
+                            <h6 className="card-subtitle mb-2 text-muted">
+                              {task.time}
+                            </h6>
+                            <p className="card-text">{task.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </React.Fragment>
               ) : (
                 <p>You're free today!</p>
               )}

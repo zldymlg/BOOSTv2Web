@@ -4,11 +4,8 @@ import "./ToDoList.css";
 import { db, auth } from "../firebase";
 import {
   doc,
-  getDoc,
   setDoc,
   updateDoc,
-  arrayUnion,
-  arrayRemove,
   serverTimestamp,
   Timestamp,
   collection,
@@ -20,7 +17,6 @@ import {
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { v4 as uuidv4 } from "uuid";
-import ExpBar from "./exp-notif-cal.tsx";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -41,11 +37,12 @@ interface Task {
   status: string;
   userId: string;
 }
+import { User } from "firebase/auth";
 
 const FcTodoList: React.FC = () => {
-  const [showModal, setShowModal] = useState(false);
+  const [_showModal, setShowModal] = useState(false);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
-  const [user, setUser] = useState<firebase.User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState<Task>({
     id: "",
@@ -63,7 +60,7 @@ const FcTodoList: React.FC = () => {
     status: "pending",
     userId: "",
   });
-  const [modalContent, setModalContent] = useState<{
+  const [_modalContent, setModalContent] = useState<{
     title: string;
     description: string;
   }>({ title: "", description: "" });
@@ -102,12 +99,12 @@ const FcTodoList: React.FC = () => {
     fetchTasks();
   }, [user]);
 
-  const handleShow = (title: string, description: string) => {
+  const _handleShow = (title: string, description: string) => {
     setShowModal(true);
     setModalContent({ title, description });
   };
 
-  const handleClose = () => setShowModal(false);
+  const _handleClose = () => setShowModal(false);
 
   const handleAddTaskShow = () => setShowAddTaskModal(true);
   const handleAddTaskClose = () => {
@@ -180,7 +177,7 @@ const FcTodoList: React.FC = () => {
         doc(db, "users", user.uid, "todolist", newTaskWithId.id),
         newTaskWithId
       );
-      
+
       const q = query(
         collection(db, "users", user.uid, "todolist"),
         where("userId", "==", user.uid)
@@ -191,9 +188,8 @@ const FcTodoList: React.FC = () => {
         updatedTasks.push({ id: doc.id, ...doc.data() } as Task);
       });
       setTasks(updatedTasks);
-      
+
       handleAddTaskClose();
-      
     } catch (error) {
       setError("Error adding task. Please try again later.");
       console.error("Error adding task:", error);
@@ -205,6 +201,7 @@ const FcTodoList: React.FC = () => {
     if (user) {
       try {
         await deleteDoc(doc(db, "users", user.uid, "todolist", id));
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
       } catch (error) {
         setError("Error deleting task. Please try again later.");
         console.error("Error deleting task:", error);
@@ -220,6 +217,12 @@ const FcTodoList: React.FC = () => {
         await updateDoc(
           doc(db, "users", user.uid, "todolist", task.id),
           updatedTask
+        );
+
+        setTasks((prevTasks) =>
+          prevTasks.map((t) =>
+            t.id === task.id ? { ...t, ...updatedTask } : t
+          )
         );
       } catch (error) {
         setError("Error completing task. Please try again later.");
@@ -359,6 +362,7 @@ const FcTodoList: React.FC = () => {
                 value={newTask.title}
                 onChange={handleAddTaskChange}
                 placeholder="Enter task title"
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -371,6 +375,7 @@ const FcTodoList: React.FC = () => {
                 value={newTask.description}
                 onChange={handleAddTaskChange}
                 placeholder="Enter task description"
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -382,6 +387,7 @@ const FcTodoList: React.FC = () => {
                 value={newTask.tags.join(",")}
                 onChange={handleAddTaskChange}
                 placeholder="Enter tags"
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -393,6 +399,10 @@ const FcTodoList: React.FC = () => {
                   setNewTask((prev) => ({ ...prev, dueDate: date }))
                 }
                 name="dueDate"
+                className="form-control"
+                readOnly
+                minDate={new Date()}
+                placeholderText="Select due date"
               />
               {dueDateError && (
                 <p className="text-danger">Due date cannot be in the past.</p>
@@ -407,52 +417,60 @@ const FcTodoList: React.FC = () => {
                 value={newTask.priority}
                 onChange={handleAddTaskChange}
                 placeholder="Enter priority (e.g., High, Medium, Low)"
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label htmlFor="taskEstimatedTime">
                 Estimated Time
               </Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Select
                 id="taskEstimatedTime"
                 name="estimatedTime"
                 value={newTask.estimatedTime}
                 onChange={handleAddTaskChange}
-                placeholder="Enter estimated time (e.g., 1 hour, 30 minutes)"
-              />
+              >
+                <option value="">Select estimated time</option>
+                <option value="15 minutes">15 minutes</option>
+                <option value="30 minutes">30 minutes</option>
+                <option value="45 minutes">45 minutes</option>
+                <option value="1 hour">1 hour</option>
+                <option value="1 hour 30 minutes">1 hour 30 minutes</option>
+                <option value="2 hours">2 hours</option>
+                <option value="3+ hours">3+ hours</option>
+              </Form.Select>
             </Form.Group>
-            <Form.Group>
-              <Form.Label>Checklist</Form.Label>
-              {newTask.checklist.map((item, index) => (
-                <div key={index} className="mb-2">
-                  <FormCheck
-                    type="checkbox"
-                    id={`checklist-${index}`}
-                    label={
-                      <Form.Control
-                        type="text"
-                        value={item.text}
-                        onChange={(e) => {
-                          const updatedChecklist = [...newTask.checklist];
-                          updatedChecklist[index].text = e.target.value;
-                          setNewTask((prev) => ({
-                            ...prev,
-                            checklist: updatedChecklist,
-                          }));
-                        }}
-                      />
-                    }
-                    checked={item.checked}
-                    onChange={(e) => {}}
-                    name={index.toString()}
-                  />
-                </div>
-              ))}
-              <Button variant="link" onClick={handleAddChecklist}>
-                Add Checklist Item
-              </Button>
-            </Form.Group>
+            <Form.Label>Checklist</Form.Label>
+            {newTask.checklist.map((item, index) => (
+              <div key={index} className="mb-2">
+                <FormCheck
+                  type="checkbox"
+                  id={`checklist-${index}`}
+                  label={
+                    <Form.Control
+                      type="text"
+                      value={item.text}
+                      onChange={(e) => {
+                        const updatedChecklist = [...newTask.checklist];
+                        updatedChecklist[index].text = e.target.value;
+                        setNewTask((prev) => ({
+                          ...prev,
+                          checklist: updatedChecklist,
+                        }));
+                      }}
+                    />
+                  }
+                  checked={item.checked}
+                  onChange={(e) => {}}
+                  name={index.toString()}
+                  required
+                />
+              </div>
+            ))}
+            <Button variant="link" onClick={handleAddChecklist}>
+              Add Checklist Item
+            </Button>
+
             {error && <p className="text-danger">{error}</p>}
           </Form>
         </Modal.Body>
