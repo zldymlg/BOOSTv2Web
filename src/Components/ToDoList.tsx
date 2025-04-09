@@ -208,7 +208,6 @@ const FcTodoList: React.FC = () => {
       }
     }
   };
-  
 
   const handleTaskComplete = async (task: Task) => {
     setError(null);
@@ -219,7 +218,7 @@ const FcTodoList: React.FC = () => {
           doc(db, "users", user.uid, "todolist", task.id),
           updatedTask
         );
-  
+
         setTasks((prevTasks) =>
           prevTasks.map((t) =>
             t.id === task.id ? { ...t, ...updatedTask } : t
@@ -392,22 +391,22 @@ const FcTodoList: React.FC = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-             <Form.Label htmlFor="taskDueDate">Due Date</Form.Label>
-             <DatePicker
-                 id="taskDueDate"
-                 selected={newTask.dueDate}
-                 onChange={(date) =>
-                 setNewTask((prev) => ({ ...prev, dueDate: date }))
-                  }
-                   name="dueDate"
-                   className="form-control"
-                    readOnly 
-                    minDate={new Date()} 
-                    placeholderText="Select due date"
-                   />
-                    {dueDateError && (
-                   <p className="text-danger">Due date cannot be in the past.</p>
-            )}
+              <Form.Label htmlFor="taskDueDate">Due Date</Form.Label>
+              <DatePicker
+                id="taskDueDate"
+                selected={newTask.dueDate}
+                onChange={(date) =>
+                  setNewTask((prev) => ({ ...prev, dueDate: date }))
+                }
+                name="dueDate"
+                className="form-control"
+                readOnly
+                minDate={new Date()}
+                placeholderText="Select due date"
+              />
+              {dueDateError && (
+                <p className="text-danger">Due date cannot be in the past.</p>
+              )}
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label htmlFor="taskPriority">Priority</Form.Label>
@@ -422,54 +421,56 @@ const FcTodoList: React.FC = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-             <Form.Label htmlFor="taskEstimatedTime">Estimated Time</Form.Label>
-             <Form.Select
-               id="taskEstimatedTime"
-               name="estimatedTime"
-               value={newTask.estimatedTime}
-               onChange={handleAddTaskChange}
-                 >
-                   <option value="">Select estimated time</option>
-                   <option value="15 minutes">15 minutes</option>
-                   <option value="30 minutes">30 minutes</option>
-                   <option value="45 minutes">45 minutes</option>
-                   <option value="1 hour">1 hour</option>
-                   <option value="1 hour 30 minutes">1 hour 30 minutes</option>
-                   <option value="2 hours">2 hours</option>
-                   <option value="3+ hours">3+ hours</option>
-                </Form.Select>
-              </Form.Group>
-              <Form.Label>Checklist</Form.Label>
-              {newTask.checklist.map((item, index) => (
-                <div key={index} className="mb-2">
-                  <FormCheck
-                    type="checkbox"
-                    id={`checklist-${index}`}
-                    label={
-                      <Form.Control
-                        type="text"
-                        value={item.text}
-                        onChange={(e) => {
-                          const updatedChecklist = [...newTask.checklist];
-                          updatedChecklist[index].text = e.target.value;
-                          setNewTask((prev) => ({
-                            ...prev,
-                            checklist: updatedChecklist,
-                          }));
-                        }}
-                      />
-                    }
-                    checked={item.checked}
-                    onChange={(e) => {}}
-                    name={index.toString()}
-                    required
-                  />
-                </div>
-              ))}
-              <Button variant="link" onClick={handleAddChecklist}>
-                Add Checklist Item
-              </Button>
+              <Form.Label htmlFor="taskEstimatedTime">
+                Estimated Time
+              </Form.Label>
+              <Form.Select
+                id="taskEstimatedTime"
+                name="estimatedTime"
+                value={newTask.estimatedTime}
+                onChange={handleAddTaskChange}
+              >
+                <option value="">Select estimated time</option>
+                <option value="15 minutes">15 minutes</option>
+                <option value="30 minutes">30 minutes</option>
+                <option value="45 minutes">45 minutes</option>
+                <option value="1 hour">1 hour</option>
+                <option value="1 hour 30 minutes">1 hour 30 minutes</option>
+                <option value="2 hours">2 hours</option>
+                <option value="3+ hours">3+ hours</option>
+              </Form.Select>
             </Form.Group>
+            <Form.Label>Checklist</Form.Label>
+            {newTask.checklist.map((item, index) => (
+              <div key={index} className="mb-2">
+                <FormCheck
+                  type="checkbox"
+                  id={`checklist-${index}`}
+                  label={
+                    <Form.Control
+                      type="text"
+                      value={item.text}
+                      onChange={(e) => {
+                        const updatedChecklist = [...newTask.checklist];
+                        updatedChecklist[index].text = e.target.value;
+                        setNewTask((prev) => ({
+                          ...prev,
+                          checklist: updatedChecklist,
+                        }));
+                      }}
+                    />
+                  }
+                  checked={item.checked}
+                  onChange={(e) => {}}
+                  name={index.toString()}
+                  required
+                />
+              </div>
+            ))}
+            <Button variant="link" onClick={handleAddChecklist}>
+              Add Checklist Item
+            </Button>
+
             {error && <p className="text-danger">{error}</p>}
           </Form>
         </Modal.Body>
