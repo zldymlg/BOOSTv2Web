@@ -7,11 +7,11 @@ export default function Reward() {
   return (
     <React.Fragment>
       <ExpBar />
-      <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-2xl font-bold mb-4 ms-4">Rewards</h1>
-        <div className="row ms-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="card col-3 m-4 border rounded shadow flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h1 className="text-2xl font-bold mb-4">Rewards</h1>
+        <div className="rewards-grid">
+          <div className="card">
+            <div className="icon-wrapper">
               <SiSpotify size={100} />
             </div>
             <div>Spotify Premium</div>
@@ -20,8 +20,8 @@ export default function Reward() {
             <progress />
             <div className="btn btn-warning">claim</div>
           </div>
-          <div className="card col-3 m-4 border rounded shadow flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center justify-center">
+          <div className="card">
+            <div className="icon-wrapper">
               <SiNetflix size={100} />
             </div>
             <div>Netflix</div>
@@ -30,8 +30,8 @@ export default function Reward() {
             <progress />
             <div className="btn btn-warning">claim</div>
           </div>
-          <div className="card col-3 m-4 border rounded shadow flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center justify-center">
+          <div className="card">
+            <div className="icon-wrapper">
               <SiCanva size={100} />
             </div>
             <div>Canva Pro</div>
@@ -40,8 +40,8 @@ export default function Reward() {
             <progress />
             <div className="btn btn-warning">claim</div>
           </div>
-          <div className="card col-3 m-4 border rounded shadow flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center justify-center">
+          <div className="card">
+            <div className="icon-wrapper">
               <SiDiscord size={100} />
             </div>
             <div>Discord Nitro</div>
@@ -50,8 +50,8 @@ export default function Reward() {
             <progress />
             <div className="btn btn-warning">claim</div>
           </div>
-          <div className="card col-3 m-4 border rounded shadow flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center justify-center">
+          <div className="card">
+            <div className="icon-wrapper">
               <SiScribd size={100} />
             </div>
             <div>Scribd Subscription</div>
@@ -60,8 +60,8 @@ export default function Reward() {
             <progress />
             <div className="btn btn-warning">claim</div>
           </div>
-          <div className="card col-3 m-4 border rounded shadow flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center justify-center">
+          <div className="card">
+            <div className="icon-wrapper">
               <SiYoutube size={100} />
             </div>
             <div>YouTube Premium</div>
@@ -70,8 +70,8 @@ export default function Reward() {
             <progress />
             <div className="btn btn-warning">claim</div>
           </div>
-          <div className="card col-3 m-4 border rounded shadow flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center justify-center">
+          <div className="card">
+            <div className="icon-wrapper">
               <SiGrammarly size={100} />
             </div>
             <div>Grammarly Pro</div>
@@ -80,8 +80,8 @@ export default function Reward() {
             <progress />
             <div className="btn btn-warning">claim</div>
           </div>
-          <div className="card col-3 m-4 border rounded shadow flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center justify-center">
+          <div className="card">
+            <div className="icon-wrapper">
               <SiValorant size={100} />
             </div>
             <div>Valorant Points</div>
@@ -90,8 +90,8 @@ export default function Reward() {
             <progress />
             <div className="btn btn-warning">claim</div>
           </div>
-          <div className="card col-3 m-4 border rounded shadow flex flex-col items-center justify-center text-center p-4">
-            <div className="flex items-center justify-center">
+          <div className="card">
+            <div className="icon-wrapper">
               <SiRoblox size={100} />
             </div>
             <div>Robux</div>
