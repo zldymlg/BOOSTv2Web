@@ -18,8 +18,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { v4 as uuidv4 } from "uuid";
 import { FaEdit } from "react-icons/fa";
-import { MdDelete } from "react-icons/md";
+import { MdDelete,MdOutlineAccessTimeFilled } from "react-icons/md";
 import { FaCalendarAlt } from "react-icons/fa";
+
 
 interface Task {
   id: string;
@@ -278,7 +279,7 @@ const FcTodoList: React.FC = () => {
             </span>
           </div>
           <div className="d-flex align-items-center">
-            <span>Estimated Time: {task.estimatedTime}</span>
+            <span><MdOutlineAccessTimeFilled size={23}/> {task.estimatedTime}</span>
           </div>
         </div>
   
