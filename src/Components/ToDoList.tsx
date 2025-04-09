@@ -201,12 +201,14 @@ const FcTodoList: React.FC = () => {
     if (user) {
       try {
         await deleteDoc(doc(db, "users", user.uid, "todolist", id));
+        setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
       } catch (error) {
         setError("Error deleting task. Please try again later.");
         console.error("Error deleting task:", error);
       }
     }
   };
+  
 
   const handleTaskComplete = async (task: Task) => {
     setError(null);
@@ -216,6 +218,12 @@ const FcTodoList: React.FC = () => {
         await updateDoc(
           doc(db, "users", user.uid, "todolist", task.id),
           updatedTask
+        );
+  
+        setTasks((prevTasks) =>
+          prevTasks.map((t) =>
+            t.id === task.id ? { ...t, ...updatedTask } : t
+          )
         );
       } catch (error) {
         setError("Error completing task. Please try again later.");
@@ -384,19 +392,22 @@ const FcTodoList: React.FC = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="taskDueDate">Due Date</Form.Label>
-              <DatePicker
-                id="taskDueDate"
-                selected={newTask.dueDate}
-                onChange={(date) =>
-                  setNewTask((prev) => ({ ...prev, dueDate: date }))
-                }
-                name="dueDate"
-                required
-              />
-              {dueDateError && (
-                <p className="text-danger">Due date cannot be in the past.</p>
-              )}
+             <Form.Label htmlFor="taskDueDate">Due Date</Form.Label>
+             <DatePicker
+                 id="taskDueDate"
+                 selected={newTask.dueDate}
+                 onChange={(date) =>
+                 setNewTask((prev) => ({ ...prev, dueDate: date }))
+                  }
+                   name="dueDate"
+                   className="form-control"
+                    readOnly 
+                    minDate={new Date()} 
+                    placeholderText="Select due date"
+                   />
+                    {dueDateError && (
+                   <p className="text-danger">Due date cannot be in the past.</p>
+            )}
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label htmlFor="taskPriority">Priority</Form.Label>
@@ -411,20 +422,23 @@ const FcTodoList: React.FC = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="taskEstimatedTime">
-                Estimated Time
-              </Form.Label>
-              <Form.Control
-                type="text"
-                id="taskEstimatedTime"
-                name="estimatedTime"
-                value={newTask.estimatedTime}
-                onChange={handleAddTaskChange}
-                placeholder="Enter estimated time (e.g., 1 hour, 30 minutes)"
-                required
-              />
-            </Form.Group>
-            <Form.Group>
+             <Form.Label htmlFor="taskEstimatedTime">Estimated Time</Form.Label>
+             <Form.Select
+               id="taskEstimatedTime"
+               name="estimatedTime"
+               value={newTask.estimatedTime}
+               onChange={handleAddTaskChange}
+                 >
+                   <option value="">Select estimated time</option>
+                   <option value="15 minutes">15 minutes</option>
+                   <option value="30 minutes">30 minutes</option>
+                   <option value="45 minutes">45 minutes</option>
+                   <option value="1 hour">1 hour</option>
+                   <option value="1 hour 30 minutes">1 hour 30 minutes</option>
+                   <option value="2 hours">2 hours</option>
+                   <option value="3+ hours">3+ hours</option>
+                </Form.Select>
+              </Form.Group>
               <Form.Label>Checklist</Form.Label>
               {newTask.checklist.map((item, index) => (
                 <div key={index} className="mb-2">
