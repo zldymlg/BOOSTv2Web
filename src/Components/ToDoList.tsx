@@ -27,6 +27,7 @@ interface Task {
   description: string;
   tags: string[];
   dueDate: Date | null;
+  dueTime: string; 
   checklist: { text: string; checked: boolean }[];
   progress: number;
   timeLeft: string;
@@ -50,6 +51,7 @@ const FcTodoList: React.FC = () => {
     description: "",
     tags: [],
     dueDate: null,
+    dueTime: "",
     checklist: [],
     progress: 0,
     timeLeft: "",
@@ -250,7 +252,7 @@ const FcTodoList: React.FC = () => {
     <div className="pb-3" key={task.id}>
       <div className="card p-3" style={{ width: "22rem" }}>
         <div className="d-flex align-items-center">
-          <span className="badge bg-success mr-auto ">{task.timeLeft}</span>
+          <span className="badge bg-success mr-auto">{task.timeLeft}</span>
           <FaEdit size={35} style={{ cursor: "pointer" }} className="p-2" />
           <MdDelete
             onClick={() => handleDeleteTask(task.id)}
@@ -263,18 +265,23 @@ const FcTodoList: React.FC = () => {
         <span className="badge bg-light text-dark text-wrap">
           {task.priority}
         </span>
+  
         <div className="d-flex justify-content-between align-items-center mt-3 p-2 bg-light rounded">
           <div className="d-flex align-items-center">
             <span>
               <FaCalendarAlt size={20} className="me-2" />
-              {formatDate(task.dueDate)}
+              {task.dueDate
+                ? `${formatDate(task.dueDate)}${
+                    task.dueTime ? ` at ${task.dueTime}` : ""
+                  }`
+                : "No Due Date"}
             </span>
           </div>
           <div className="d-flex align-items-center">
             <span>Estimated Time: {task.estimatedTime}</span>
           </div>
         </div>
-
+  
         {task.status !== "completed" && (
           <FormCheck
             type="checkbox"
@@ -285,7 +292,7 @@ const FcTodoList: React.FC = () => {
         )}
       </div>
     </div>
-  );
+  );  
 
   return (
     <div>
@@ -400,25 +407,36 @@ const FcTodoList: React.FC = () => {
                 }
                 name="dueDate"
                 className="form-control"
-                readOnly
                 minDate={new Date()}
                 placeholderText="Select due date"
+                showPopperArrow={false}
+                dateFormat="MMMM d, yyyy"
+                autoComplete="off"
+                onKeyDown={(e) => e.preventDefault()}
               />
               {dueDateError && (
                 <p className="text-danger">Due date cannot be in the past.</p>
               )}
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="taskPriority">Priority</Form.Label>
+              <Form.Label>Due Time</Form.Label>
               <Form.Control
-                type="text"
-                id="taskPriority"
-                name="priority"
-                value={newTask.priority}
-                onChange={handleAddTaskChange}
-                placeholder="Enter priority (e.g., High, Medium, Low)"
-                required
-              />
+               type="time"
+               value={newTask.dueTime}
+              onChange={(e) => setNewTask({ ...newTask, dueTime: e.target.value })}
+            />
+            <Form.Select
+              id="taskPriority"
+              name="priority"
+              value={newTask.priority}
+              onChange={handleAddTaskChange}
+              required
+            >
+              <option value="">Select priority</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label htmlFor="taskEstimatedTime">
