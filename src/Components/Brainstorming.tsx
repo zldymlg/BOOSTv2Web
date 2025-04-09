@@ -7,6 +7,9 @@ import "./SmartGoals.css";
 
 export default function Brainstorming() {
   const [activeComponent, setActiveComponent] = useState("brainstorming");
+  
+
+  
 
   return (
     <React.Fragment>
