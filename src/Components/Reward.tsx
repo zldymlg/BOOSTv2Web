@@ -7,17 +7,18 @@ export default function Reward() {
   return (
     <React.Fragment>
       <ExpBar />
-      <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center h-screen">
         <h1 className="text-2xl font-bold mb-4">Rewards</h1>
         <div className="rewards-grid">
-          <div className="card">
+        <div className="card">
             <div className="icon-wrapper">
               <SiSpotify size={100} />
             </div>
             <div>Spotify Premium</div>
             <div>1 Month</div>
             <div>15,000 Experience</div>
-            <progress />
+            <progress value={10} max={15000}/>
+            <div>0/15,000XP</div>
             <div className="btn btn-warning">claim</div>
           </div>
           <div className="card">
@@ -27,7 +28,8 @@ export default function Reward() {
             <div>Netflix</div>
             <div>1 Month</div>
             <div>100,000 Experience</div>
-            <progress />
+            <progress value={10} max={100000} />
+            <div>0/100,000XP</div>
             <div className="btn btn-warning">claim</div>
           </div>
           <div className="card">
@@ -37,7 +39,8 @@ export default function Reward() {
             <div>Canva Pro</div>
             <div>1 Month</div>
             <div>12,000 Experience</div>
-            <progress />
+            <progress value={10} max={12000}/>
+            <div>0/12,000XP</div>
             <div className="btn btn-warning">claim</div>
           </div>
           <div className="card">
@@ -46,8 +49,9 @@ export default function Reward() {
             </div>
             <div>Discord Nitro</div>
             <div>1 Month</div>
-            <div>100,000 Experience</div>
-            <progress />
+            <div>16,000 Experience</div>
+            <progress value={10} max={16000}/>
+            <div>0/16,000XP</div>
             <div className="btn btn-warning">claim</div>
           </div>
           <div className="card">
@@ -56,8 +60,9 @@ export default function Reward() {
             </div>
             <div>Scribd Subscription</div>
             <div>1 Month</div>
-            <div>100,000 Experience</div>
-            <progress />
+            <div>18,000 Experience</div>
+            <progress value={10} max={18000}/>
+            <div>0/18,000XP</div>
             <div className="btn btn-warning">claim</div>
           </div>
           <div className="card">
@@ -66,8 +71,9 @@ export default function Reward() {
             </div>
             <div>YouTube Premium</div>
             <div>1 Month</div>
-            <div>100,000 Experience</div>
-            <progress />
+            <div>13,000 Experience</div>
+            <progress value={10} max={13000}/>
+            <div>0/13,000XP</div>
             <div className="btn btn-warning">claim</div>
           </div>
           <div className="card">
@@ -76,8 +82,9 @@ export default function Reward() {
             </div>
             <div>Grammarly Pro</div>
             <div>1 Month</div>
-            <div>100,000 Experience</div>
-            <progress />
+            <div>12,000 Experience</div>
+            <progress value={10} max={12000}/>
+            <div>0/12,000XP</div>
             <div className="btn btn-warning">claim</div>
           </div>
           <div className="card">
@@ -86,8 +93,9 @@ export default function Reward() {
             </div>
             <div>Valorant Points</div>
             <div>1000 VP</div>
-            <div>100,000 Experience</div>
-            <progress />
+            <div>25,000 Experience</div>
+            <progress value={10} max={25000}/>
+            <div>0/25,000XP</div>
             <div className="btn btn-warning">claim</div>
           </div>
           <div className="card">
@@ -96,8 +104,9 @@ export default function Reward() {
             </div>
             <div>Robux</div>
             <div>400 Robux</div>
-            <div>100,000 Experience</div>
-            <progress />
+            <div>40,000 Experience</div>
+            <progress value={10} max={40000}/>
+            <div>0/40,000XP</div>
             <div className="btn btn-warning">claim</div>
           </div>
         </div>

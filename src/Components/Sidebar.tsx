@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./Sidebar.css";
 import { BsCardText } from "react-icons/bs";
 import { FaUserCircle } from "react-icons/fa";
+import { IoRibbon } from "react-icons/io5";
 import { LayoutGrid, ListCheck, Timer, Brain, Settings } from "lucide-react";
 import Brainstorming from "./Brainstorming.tsx";
 import Dashboard from "./dashboard-content.tsx";
@@ -11,10 +12,10 @@ import FlashCards from "./Flashcard.tsx";
 import SettingsTabs from "./Settings.tsx";
 import Profile from "./Profile.tsx";
 import LogOut from "../Dashboard.tsx";
+import Rewards from "./Reward.tsx";
 import { FiMenu, FiLogOut } from "react-icons/fi";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth <= 768);
   const [activeTab, setActiveTab] = useState(() => {
@@ -54,6 +55,12 @@ export default function Sidebar() {
       icon: <Brain size={20} />,
       component: <Brainstorming />,
     },
+    
+    {
+      name: "Rewards",
+      icon: <IoRibbon size={20} />,
+      component: <Rewards />,
+    },
     {
       name: "Settings",
       icon: <Settings size={20} />,
@@ -69,6 +76,7 @@ export default function Sidebar() {
       icon: <FiLogOut size={20} />,
       component: <LogOut />,
     },
+    
   ];
 
   useEffect(() => {
