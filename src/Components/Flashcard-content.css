@@ -3,8 +3,13 @@
     color: white;
     width: 15rem;
 }
-#dlt-btn{
+#delete-btn{
     background-color: red;
+    color: white;
+    width: 5rem;
+}
+#edit-btn{
+    background-color: #FFCE1B;
     color: white;
     width: 5rem;
 }
