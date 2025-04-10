@@ -1,7 +1,17 @@
 import React from "react";
 import "./Reward.css";
 import ExpBar from "./exp-notif-cal.tsx";
-import { SiNetflix, SiSpotify, SiCanva, SiDiscord, SiScribd, SiYoutube, SiGrammarly, SiValorant, SiRoblox } from "react-icons/si";
+import {
+  SiNetflix,
+  SiSpotify,
+  SiCanva,
+  SiDiscord,
+  SiScribd,
+  SiYoutube,
+  SiGrammarly,
+  SiValorant,
+  SiRoblox,
+} from "react-icons/si";
 
 export default function Reward() {
   return (

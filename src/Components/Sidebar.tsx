@@ -11,11 +11,12 @@ import ToDoList from "./ToDoList.tsx";
 import FlashCards from "./Flashcard.tsx";
 import SettingsTabs from "./Settings.tsx";
 import Profile from "./Profile.tsx";
+import Reward from "./Reward.tsx";
 import LogOut from "../Dashboard.tsx";
-import Rewards from "./Reward.tsx";
 import { FiMenu, FiLogOut } from "react-icons/fi";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
+
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth <= 768);
   const [activeTab, setActiveTab] = useState(() => {
@@ -59,7 +60,7 @@ export default function Sidebar() {
     {
       name: "Rewards",
       icon: <IoRibbon size={20} />,
-      component: <Rewards />,
+      component: <Reward />,
     },
     {
       name: "Settings",
@@ -70,11 +71,6 @@ export default function Sidebar() {
       name: "Profile",
       icon: <FaUserCircle size={20} />,
       component: <Profile />,
-    },
-    {
-      name: "Logout",
-      icon: <FiLogOut size={20} />,
-      component: <LogOut />,
     },
     
   ];
@@ -89,7 +85,6 @@ export default function Sidebar() {
     localStorage.setItem("activeTab", activeTab);
   }, [activeTab]);
 
-  // Fetching user data (username and profile picture) from Firebase Firestore
   useEffect(() => {
     onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -98,8 +93,8 @@ export default function Sidebar() {
         if (docSnap.exists()) {
           const data = docSnap.data();
 
-          const profilePicture = data.profilePicture || ""; // Assuming the profile picture URL is directly stored
-          const name = data.name || "Username"; // Default if no username is found
+          const profilePicture = data.profilePicture || ""; 
+          const name = data.name || "Username"; 
 
           setUserData({
             profilePictureUrl: profilePicture,
@@ -168,9 +163,9 @@ export default function Sidebar() {
         {/* Profile Section */}
         <div className="user-section" style={{ cursor: "pointer" }}>
           <img
-            src={userData.profilePictureUrl || "default-avatar.png"} // Default avatar if no profile picture
+            src={userData.profilePictureUrl || "default-avatar.png"} 
             alt="User Avatar"
-            className="profile-avatar" // You can style this in your CSS
+            className="profile-avatar" 
             onClick={() => setActiveTab("Profile")}
             style={{ width: "4vw", height: "4vw", borderRadius: "50%" }}
           />
@@ -182,7 +177,6 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Tab content display */}
       <div className="content">
         {menuItems.map(
           (item) =>
