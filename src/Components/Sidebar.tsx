@@ -10,13 +10,23 @@ import ToDoList from "./ToDoList.tsx";
 import FlashCards from "./Flashcard.tsx";
 import SettingsTabs from "./Settings.tsx";
 import Profile from "./Profile.tsx";
-import { FiMenu, FiChevronUp } from "react-icons/fi";
+import LogOut from "../Dashboard.tsx";
+import { FiMenu, FiLogOut } from "react-icons/fi";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth <= 768);
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("activeTab") || "Dashboard";
   });
+  const [userData, setUserData] = useState<any>({
+    profilePictureUrl: "",
+    name: "",
+  });
+
+  const auth = getAuth();
+  const db = getFirestore();
 
   const menuItems = [
     {
@@ -49,6 +59,16 @@ export default function Sidebar() {
       icon: <Settings size={20} />,
       component: <SettingsTabs />,
     },
+    {
+      name: "Profile",
+      icon: <FaUserCircle size={20} />,
+      component: <Profile />,
+    },
+    {
+      name: "Logout",
+      icon: <FiLogOut size={20} />,
+      component: <LogOut />,
+    },
   ];
 
   useEffect(() => {
@@ -60,6 +80,27 @@ export default function Sidebar() {
   useEffect(() => {
     localStorage.setItem("activeTab", activeTab);
   }, [activeTab]);
+
+  // Fetching user data (username and profile picture) from Firebase Firestore
+  useEffect(() => {
+    onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userRef = doc(db, "users", firebaseUser.uid);
+        const docSnap = await getDoc(userRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+
+          const profilePicture = data.profilePicture || ""; // Assuming the profile picture URL is directly stored
+          const name = data.name || "Username"; // Default if no username is found
+
+          setUserData({
+            profilePictureUrl: profilePicture,
+            name: name,
+          });
+        }
+      }
+    });
+  }, [auth, db]);
 
   return (
     <div className="app-container">
@@ -95,36 +136,53 @@ export default function Sidebar() {
           ))}
         </ul>
 
+        <div className="user-section" style={{ cursor: "pointer" }}>
+          <img
+            src={userData.profilePictureUrl || "default-avatar.png"}
+            alt="User Avatar"
+            className="profile-avatar"
+            onClick={() => setActiveTab("Profile")}
+            style={{ width: "4vw", height: "4vw", borderRadius: "50%" }}
+          />
+          {!isCollapsed && (
+            <span className="username px-2">{userData.name}</span>
+          )}
+        </div>
+
+        <div
+          className={`content ${
+            isCollapsed ? "content-collapsed" : "content-expanded"
+          }`}
+        >
+          {menuItems.find((item) => item.name === activeTab)?.component}
+        </div>
+
         {/* Profile Section */}
         <div className="user-section" style={{ cursor: "pointer" }}>
-          <FaUserCircle
-            size={30}
-            className="ms-1"
+          <img
+            src={userData.profilePictureUrl || "default-avatar.png"} // Default avatar if no profile picture
+            alt="User Avatar"
+            className="profile-avatar" // You can style this in your CSS
             onClick={() => setActiveTab("Profile")}
+            style={{ width: "4vw", height: "4vw", borderRadius: "50%" }}
           />
           {!isCollapsed && (
             <>
-              <span
-                className="user-name ms-1"
-                onClick={() => setActiveTab("Profile")}
-              >
-                Username
-              </span>
-              <FiChevronUp size={20} className="ms-3" />
+              <span className="username px-2">{userData.name}</span>
             </>
           )}
         </div>
       </div>
 
-      <div
-        className={`content ${
-          isCollapsed ? "content-collapsed" : "content-expanded"
-        }`}
-      >
-        {activeTab === "Profile" ? (
-          <Profile />
-        ) : (
-          menuItems.find((item) => item.name === activeTab)?.component
+      {/* Tab content display */}
+      <div className="content">
+        {menuItems.map(
+          (item) =>
+            item.name === activeTab && (
+              <div key={item.name} className="tab-content">
+                {item.component}
+              </div>
+            )
         )}
       </div>
     </div>

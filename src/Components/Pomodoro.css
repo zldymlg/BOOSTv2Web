@@ -18,11 +18,7 @@ body {
   transition: background-color 0.3s ease-in-out;
 }
 
-.display-1 {
-  font-size: 9rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-}
+
 
 
 .nav {
@@ -33,7 +29,7 @@ body {
 
 .nav-link {
   color: white;
-  font-size: 1rem;
+  font-size: 4vw;
   padding: 0.5rem 1rem;
   cursor: pointer;
 }
@@ -51,6 +47,10 @@ body {
   width: 100%;
   border: none !important;
   outline: none !important;
+}
+
+.modal-header {
+  background-color: white !important;
 }
 
 

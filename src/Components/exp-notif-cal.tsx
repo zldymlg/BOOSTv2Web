@@ -34,6 +34,23 @@ export default function ExpNotifCal() {
   const [latestNotifTime, setLatestNotifTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    const handleStorage = () => {
+      const lastSeen = localStorage.getItem("lastSeenNotifTime");
+      if (lastSeen) {
+        setLastSeenNotifTime(new Date(lastSeen));
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  useEffect(() => {
+    const lastSeen = localStorage.getItem("lastSeenNotifTime");
+    if (lastSeen) {
+      setLastSeenNotifTime(new Date(lastSeen));
+    }
+
     const fetchExpAndTodoList = async () => {
       try {
         const auth = getAuth();
@@ -163,7 +180,8 @@ export default function ExpNotifCal() {
     const now = new Date();
     setIsNotifFloating(!isNotifFloating);
     setIsCalFloating(false);
-    setLastSeenNotifTime(now); // 👈 update last seen time
+    setLastSeenNotifTime(now);
+    localStorage.setItem("lastSeenNotifTime", now.toISOString());
   };
 
   const toggleCalFloating = () => {
@@ -211,6 +229,8 @@ export default function ExpNotifCal() {
               tasks.push({
                 title: todoData.title,
                 dueDate: dueDate,
+                description: todoData.description || "No description available",
+                time: format(dueDate, "hh:mm a"),
               });
             }
           }
@@ -270,7 +290,7 @@ export default function ExpNotifCal() {
           </div>
           <div className="todo-list">
             {dueNotifications.length === 0 ? (
-              <p></p>
+              <p>No upcoming tasks</p>
             ) : (
               dueNotifications.map((note, index) => (
                 <div key={index} className="todo-card">
@@ -280,7 +300,6 @@ export default function ExpNotifCal() {
                       className="pe-2"
                       size="sm"
                     />
-
                     {note.title}
                   </h5>
                   <p className="due-date-time">
@@ -292,7 +311,7 @@ export default function ExpNotifCal() {
           </div>
           <div className="todo-list">
             {overdueNotifications.length === 0 ? (
-              <p></p>
+              <p>No overdue tasks</p>
             ) : (
               overdueNotifications.map((note, index) => (
                 <div key={index} className="todo-card">
@@ -314,7 +333,7 @@ export default function ExpNotifCal() {
 
           <div className="todo-list">
             {xpNotifications.length === 0 ? (
-              <p></p>
+              <p>No XP notifications</p>
             ) : (
               xpNotifications.map((note, index) => (
                 <div key={index} className="todo-card">
@@ -354,23 +373,27 @@ export default function ExpNotifCal() {
               />
               <h4>Schedule</h4>
               {tasksForSelectedDate.length > 0 ? (
-                <React.Fragment>
-                  <div className="row">
-                    {tasksForSelectedDate.map((task, index) => (
-                      <div className="col-md-4 mb-3" key={index}>
-                        <div className="card shadow-sm h-100">
-                          <div className="card-body">
-                            <h5 className="card-title">{task.title}</h5>
-                            <h6 className="card-subtitle mb-2 text-muted">
-                              {task.time}
-                            </h6>
-                            <p className="card-text">{task.description}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </React.Fragment>
+                <div className="Sched-list">
+                  {tasksForSelectedDate.map((task, index) => (
+                    <div key={index} className="Sched-card">
+                      <h5 className="Sched-title">
+                        <FontAwesomeIcon
+                          icon={faTasks}
+                          className="pe-2"
+                          size="sm"
+                        />
+                        {task.title}
+                      </h5>
+                      <p className="due-date-time">
+                        {format(task.dueDate, "MMMM d, yyyy")} at{" "}
+                        {format(task.dueDate, "hh:mm a")}
+                      </p>
+                      {task.description && (
+                        <p className="task-description">"{task.description}"</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <p>You're free today!</p>
               )}

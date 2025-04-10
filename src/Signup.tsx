@@ -36,6 +36,8 @@ const restrictedUsernames = [
 const Signup: React.FC = () => {
   const navigate = useNavigate(); // Initialize useNavigate
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] =
+    useState<boolean>(false);
   const [termsChecked, setTermsChecked] = useState<boolean>(false);
   const [showTerms, setShowTerms] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
@@ -252,7 +254,7 @@ const Signup: React.FC = () => {
             <input
               className="rounded p-2 border-0 w-100"
               name="confirmPassword"
-              type={passwordVisible ? "text" : "password"}
+              type={confirmPasswordVisible ? "text" : "password"}
               placeholder="Confirm your Password"
               value={userInfo.confirmPassword}
               onChange={handleChange}
@@ -260,9 +262,9 @@ const Signup: React.FC = () => {
             <motion.button
               type="button"
               className="position-absolute end-0 me-3 mt-1 bg-transparent border-0"
-              onClick={() => setPasswordVisible(!passwordVisible)}
+              onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
             >
-              {passwordVisible ? <EyeOff /> : <Eye />}
+              {confirmPasswordVisible ? <EyeOff /> : <Eye />}
             </motion.button>
           </motion.div>
 

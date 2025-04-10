@@ -158,10 +158,6 @@ const FcTodoList: React.FC = () => {
       if (newTask.dueDate) {
         const dueDate = new Date(newTask.dueDate);
         dueDate.setUTCHours(0, 0, 0, 0);
-        if (dueDate < today) {
-          setDueDateError(true);
-          return;
-        }
       }
 
       const newTaskWithId = {
@@ -400,9 +396,12 @@ const FcTodoList: React.FC = () => {
                 }
                 name="dueDate"
                 className="form-control"
-                readOnly
                 minDate={new Date()}
                 placeholderText="Select due date"
+                showPopperArrow={false}
+                dateFormat="MMMM d, yyyy"
+                autoComplete="off"
+                onKeyDown={(e) => e.preventDefault()}
               />
               {dueDateError && (
                 <p className="text-danger">Due date cannot be in the past.</p>
@@ -410,15 +409,18 @@ const FcTodoList: React.FC = () => {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label htmlFor="taskPriority">Priority</Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Select
                 id="taskPriority"
-                name="priority"
                 value={newTask.priority}
-                onChange={handleAddTaskChange}
-                placeholder="Enter priority (e.g., High, Medium, Low)"
-                required
-              />
+                onChange={(e) =>
+                  setNewTask((prev) => ({ ...prev, priority: e.target.value }))
+                }
+              >
+                <option value="">Select Priority</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label htmlFor="taskEstimatedTime">

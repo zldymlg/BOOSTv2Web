@@ -13,8 +13,8 @@
 }
 
 .profile-avatar {
-    width: 80px;
-    height: 80px;
+    width: 20vw;
+    height: 20vw;
     border-radius: 50%;
     border: 2px solid #ddd;
 }

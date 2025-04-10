@@ -627,14 +627,13 @@ const PomodoroTimer: React.FC = () => {
         <Button
           onClick={() => setShowSettings(!showSettings)}
           className="mx-3 pt-5 border-0"
-          style={{ backgroundColor: "transparent" }}
+          style={{ backgroundColor: "transparent", width: "50px" }}
         >
           <FaCog
             style={{
               color: "black",
               fontSize: "30px",
             }}
-            id="settings"
             title="settings"
           />
         </Button>
@@ -750,7 +749,7 @@ const PomodoroTimer: React.FC = () => {
           <Nav className="text-white justify-content-center p-2">
             <Nav.Item>
               <Nav.Link
-                className={mode === "pomodoro" ? "active" : ""}
+                className={mode === "pomodoro" ? "active" : " "}
                 onClick={() => handleModeChange("pomodoro")}
               >
                 Pomodoro
@@ -798,15 +797,18 @@ const PomodoroTimer: React.FC = () => {
             </Modal.Body>
             <Modal.Footer></Modal.Footer>
           </Modal>
-          <h1
+          <h2
             className="display-1"
             style={{
-              fontSize: "9rem",
+              fontSize: "10vw",
               fontWeight: "900",
+              ...(window.innerWidth <= 768 && {
+                fontSize: "19vw",
+              }),
             }}
           >
             {formatTime(timeLeft)}
-          </h1>
+          </h2>
           {currentTaskIndex < tasks.length && (
             <h5>
               Current Task:{" "}
