@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import "./Sidebar.css";
 import { BsCardText } from "react-icons/bs";
 import { FaUserCircle } from "react-icons/fa";
-import { IoRibbon } from "react-icons/io5";
 import { LayoutGrid, ListCheck, Timer, Brain, Settings } from "lucide-react";
 import Brainstorming from "./Brainstorming.tsx";
 import Dashboard from "./dashboard-content.tsx";
@@ -59,11 +58,6 @@ export default function Sidebar() {
       name: "Settings",
       icon: <Settings size={20} />,
       component: <SettingsTabs />,
-    },
-    {
-      name: "Rewards",
-      icon: <IoRibbon size={20} />,
-      component: <Rewards />,
     },
     {
       name: "Profile",

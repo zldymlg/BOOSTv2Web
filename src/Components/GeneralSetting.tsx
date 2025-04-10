@@ -46,11 +46,17 @@ export default function General() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-          )
+          console.log("Latitude:", latitude);
+          console.log("Longitude:", longitude);
+
+          const URL =
+            "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en";
+          fetch(URL)
             .then((res) => res.json())
-            .then(() => updateDateTime())
+            .then((data) => {
+              console.log("Timezone data:", data);
+              updateDateTime(); // Optional: gamitin ang data kung kinakailangan
+            })
             .catch((err) => console.error("Error fetching timezone:", err));
         },
         (error) => {
@@ -72,30 +78,6 @@ export default function General() {
     <React.Fragment>
       <div className="row">
         <div className="col-sm-auto" id="leftside">
-          <div>
-            <h3 className="mb-4">Theme & Appearance</h3>
-            <BsFillMoonFill size={20} className="ms-5" />
-            <span className="p-2 me-5">Dark mode</span>
-            <label className="switch ms-5 me-5">
-              <input
-                type="checkbox"
-                checked={theme === "dark"}
-                onChange={() => setTheme(theme === "light" ? "dark" : "light")}
-              />
-              <span className="slider round"></span>
-            </label>
-          </div>
-          <div className="mt-5">
-            <h3>Language Preferences</h3>
-            <ul className="row gap-3">
-              <li className="w-50 btn fw-medium" id="gen-btn">
-                Filipino
-              </li>
-              <li className="w-50 btn fw-medium" id="gen-btn">
-                English
-              </li>
-            </ul>
-          </div>
           <div className="mt-5">
             <h3>Feedback and Support</h3>
             <ul className="row gap-3">
@@ -149,6 +131,31 @@ export default function General() {
                 <AiFillQuestionCircle size={20} className="me-2" />
                 Help
               </li>
+
+              {showHelpModal && (
+                <div className="modal-backdrop">
+                  <div className="modal-box">
+                    <h4>Need Help?</h4>
+                    <p className="my-2">
+                      For assistance or more information, please contact our
+                      support team at:
+                    </p>
+                    <ul>
+                      <li>Email: support@example.com</li>
+                      <li>Phone: +63 912 345 6789</li>
+                      <li>Facebook: /ourpage</li>
+                    </ul>
+                    <div className="d-flex justify-content-end gap-2 mt-3">
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => setShowHelpModal(false)}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </ul>
           </div>
         </div>

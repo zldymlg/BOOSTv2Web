@@ -18,9 +18,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { v4 as uuidv4 } from "uuid";
 import { FaEdit } from "react-icons/fa";
-import { MdDelete,MdOutlineAccessTimeFilled } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
 import { FaCalendarAlt } from "react-icons/fa";
-
 
 interface Task {
   id: string;
@@ -28,7 +27,6 @@ interface Task {
   description: string;
   tags: string[];
   dueDate: Date | null;
-  dueTime: string; 
   checklist: { text: string; checked: boolean }[];
   progress: number;
   timeLeft: string;
@@ -52,7 +50,6 @@ const FcTodoList: React.FC = () => {
     description: "",
     tags: [],
     dueDate: null,
-    dueTime: "",
     checklist: [],
     progress: 0,
     timeLeft: "",
@@ -249,7 +246,7 @@ const FcTodoList: React.FC = () => {
     <div className="pb-3" key={task.id}>
       <div className="card p-3" style={{ width: "22rem" }}>
         <div className="d-flex align-items-center">
-          <span className="badge bg-success mr-auto">{task.timeLeft}</span>
+          <span className="badge bg-success mr-auto ">{task.timeLeft}</span>
           <FaEdit size={35} style={{ cursor: "pointer" }} className="p-2" />
           <MdDelete
             onClick={() => handleDeleteTask(task.id)}
@@ -262,23 +259,18 @@ const FcTodoList: React.FC = () => {
         <span className="badge bg-light text-dark text-wrap">
           {task.priority}
         </span>
-  
         <div className="d-flex justify-content-between align-items-center mt-3 p-2 bg-light rounded">
           <div className="d-flex align-items-center">
             <span>
               <FaCalendarAlt size={20} className="me-2" />
-              {task.dueDate
-                ? `${formatDate(task.dueDate)}${
-                    task.dueTime ? ` at ${task.dueTime}` : ""
-                  }`
-                : "No Due Date"}
+              {formatDate(task.dueDate)}
             </span>
           </div>
           <div className="d-flex align-items-center">
-            <span><MdOutlineAccessTimeFilled size={23}/> {task.estimatedTime}</span>
+            <span>Estimated Time: {task.estimatedTime}</span>
           </div>
         </div>
-  
+
         {task.status !== "completed" && (
           <FormCheck
             type="checkbox"
@@ -289,7 +281,7 @@ const FcTodoList: React.FC = () => {
         )}
       </div>
     </div>
-  );  
+  );
 
   return (
     <div>
@@ -416,24 +408,19 @@ const FcTodoList: React.FC = () => {
               )}
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Due Time</Form.Label>
-              <Form.Control
-               type="time"
-               value={newTask.dueTime}
-              onChange={(e) => setNewTask({ ...newTask, dueTime: e.target.value })}
-            />
-            <Form.Select
-              id="taskPriority"
-              name="priority"
-              value={newTask.priority}
-              onChange={handleAddTaskChange}
-              required
-            >
-              <option value="">Select priority</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </Form.Select>
+              <Form.Label htmlFor="taskPriority">Priority</Form.Label>
+              <Form.Select
+                id="taskPriority"
+                value={newTask.priority}
+                onChange={(e) =>
+                  setNewTask((prev) => ({ ...prev, priority: e.target.value }))
+                }
+              >
+                <option value="">Select Priority</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label htmlFor="taskEstimatedTime">
