@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./Sidebar.css";
 import { BsCardText } from "react-icons/bs";
 import { FaUserCircle } from "react-icons/fa";
+import { IoRibbon } from "react-icons/io5";
 import { LayoutGrid, ListCheck, Timer, Brain, Settings } from "lucide-react";
 import Brainstorming from "./Brainstorming.tsx";
 import Dashboard from "./dashboard-content.tsx";
@@ -10,10 +11,10 @@ import ToDoList from "./ToDoList.tsx";
 import FlashCards from "./Flashcard.tsx";
 import SettingsTabs from "./Settings.tsx";
 import Profile from "./Profile.tsx";
-import LogOut from "../Dashboard.tsx";
 import { FiMenu, FiLogOut } from "react-icons/fi";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
+import Rewards from "./Reward.tsx";
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth <= 768);
@@ -65,9 +66,9 @@ export default function Sidebar() {
       component: <Profile />,
     },
     {
-      name: "Logout",
-      icon: <FiLogOut size={20} />,
-      component: <LogOut />,
+      name: "Rewards",
+      icon: <IoRibbon size={20} />,
+      component: <Rewards />,
     },
   ];
 

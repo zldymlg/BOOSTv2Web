@@ -78,7 +78,7 @@ export default function General() {
     <React.Fragment>
       <div className="row">
         <div className="col-sm-auto" id="leftside">
-          <div className="mt-5">
+          <div className="">
             <h3>Feedback and Support</h3>
             <ul className="row gap-3">
               <li
