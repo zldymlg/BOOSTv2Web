@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { faTasks, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaBell } from "react-icons/fa";
@@ -98,7 +98,6 @@ export default function ExpNotifCal() {
             }
           });
 
-          // Format overdue tasks
           overdueTasks.sort((a, b) => b.dueDate - a.dueDate);
           const overdueFormatted = overdueTasks.map((task) => ({
             title: task.title,
@@ -106,7 +105,6 @@ export default function ExpNotifCal() {
             time: format(task.dueDate, "hh:mm a"),
           }));
 
-          // Format upcoming tasks
           upcomingTasks.sort((a, b) => b.dueDate - a.dueDate);
           const upcomingFormatted =
             upcomingTasks.length > 0
@@ -148,10 +146,8 @@ export default function ExpNotifCal() {
 
           setXpNotifications(xpNotifs);
 
-          // Find the latest notification date
           let latestNotifDate: Date | null = null;
 
-          // Find latest XP notification
           if (xpHistorySnapshot.size > 0) {
             const firstXp = xpHistorySnapshot.docs[0].data();
             const xpDate = firstXp.timestamp.toDate();
@@ -159,7 +155,6 @@ export default function ExpNotifCal() {
               latestNotifDate = xpDate;
           }
 
-          // Find latest due/overdue task notification
           [...upcomingTasks, ...overdueTasks].forEach((task) => {
             const dueDate = task.dueDate;
             if (!latestNotifDate || dueDate > latestNotifDate)
