@@ -12,7 +12,6 @@ import FlashCards from "./Flashcard.tsx";
 import SettingsTabs from "./Settings.tsx";
 import Profile from "./Profile.tsx";
 import Reward from "./Reward.tsx";
-import LogOut from "../Dashboard.tsx";
 import { FiMenu, FiLogOut } from "react-icons/fi";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
@@ -56,7 +55,7 @@ export default function Sidebar() {
       icon: <Brain size={20} />,
       component: <Brainstorming />,
     },
-    
+
     {
       name: "Rewards",
       icon: <IoRibbon size={20} />,
@@ -72,7 +71,6 @@ export default function Sidebar() {
       icon: <FaUserCircle size={20} />,
       component: <Profile />,
     },
-    
   ];
 
   useEffect(() => {
@@ -93,8 +91,8 @@ export default function Sidebar() {
         if (docSnap.exists()) {
           const data = docSnap.data();
 
-          const profilePicture = data.profilePicture || ""; 
-          const name = data.name || "Username"; 
+          const profilePicture = data.profilePicture || "";
+          const name = data.name || "Username";
 
           setUserData({
             profilePictureUrl: profilePicture,
@@ -152,20 +150,12 @@ export default function Sidebar() {
           )}
         </div>
 
-        <div
-          className={`content ${
-            isCollapsed ? "content-collapsed" : "content-expanded"
-          }`}
-        >
-          {menuItems.find((item) => item.name === activeTab)?.component}
-        </div>
-
         {/* Profile Section */}
         <div className="user-section" style={{ cursor: "pointer" }}>
           <img
-            src={userData.profilePictureUrl || "default-avatar.png"} 
+            src={userData.profilePictureUrl || "default-avatar.png"}
             alt="User Avatar"
-            className="profile-avatar" 
+            className="profile-avatar"
             onClick={() => setActiveTab("Profile")}
             style={{ width: "4vw", height: "4vw", borderRadius: "50%" }}
           />
