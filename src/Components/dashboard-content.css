@@ -72,7 +72,6 @@
     overflow: hidden;
     white-space: nowrap;
     border-right: 4px solid #f4a300;
-    /* Bright Orange */
     animation: typing 3s steps(30) 1s 1 normal both;
 }
 
@@ -130,7 +129,6 @@
 .greeting-container {
     text-align: center;
     padding: 40px 20px;
-    background-color: #f9f9f9;
     border-radius: 8px;
     max-width: 800px;
     margin: 0 auto;

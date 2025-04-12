@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-//import Header from "./Components/Header.tsx";
-//import LandingNav from "./Components/LandingPageNavigation.tsx";
+// import Header from "./Components/Header.tsx";
+// import LandingNav from "./Components/LandingPageNavigation.tsx";
 import Footer from "./Components/Footer.tsx";
 import "bootstrap/dist/css/bootstrap.css";
 import "/src/Login.css";
 import { Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { auth, googleProvider, firestore } from "./firebase";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
 function Login() {
@@ -43,24 +47,21 @@ function Login() {
       );
       const user = userCredential.user;
 
-      // Fetch user data from Firestore
       const userData = await fetchUserData(user.uid);
       if (userData) {
         alert(`Login Successful! Welcome, ${userData.name || "User"}!`);
-        window.location.href = "dashboard.html"; // Redirect to the dashboard
+        window.location.href = "dashboard.html";
       }
     } catch (error) {
       setError("User not found or incorrect credentials.");
     }
   };
 
-  // Google Sign-In
   const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Fetch user data from Firestore
       const userData = await fetchUserData(user.uid);
       if (userData) {
         alert(
@@ -70,6 +71,20 @@ function Login() {
       }
     } catch (error) {
       setError("Google Sign-In failed. Please try again.");
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Please enter your email address to reset your password.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset email sent. Please check your inbox.");
+    } catch (error) {
+      setError("Failed to send password reset email. Please try again.");
     }
   };
 
@@ -151,14 +166,28 @@ function Login() {
             </motion.button>
           </motion.div>
 
-          <a className="text-end p-0">Forget Password?</a>
-          <motion.label
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-          >
-            <input type="checkbox" /> Remember me
-          </motion.label>
+          <div className="d-flex justify-content-between align-items-center mt-2">
+            <motion.label
+              className="m-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              <input type="checkbox" /> Remember me
+            </motion.label>
+            <button
+              type="button"
+              className="p-0 bg-transparent border-0 text-primary"
+              onClick={handleForgotPassword}
+              style={{
+                cursor: "pointer",
+                fontSize: "0.9rem",
+                textDecoration: "underline",
+              }}
+            >
+              Forgot Password?
+            </button>
+          </div>
 
           <motion.button
             id="login-btn"
