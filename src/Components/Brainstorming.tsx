@@ -3,7 +3,7 @@ import { BsSearch } from "react-icons/bs";
 import SmartGoals from "./SmartGoals";
 import Mindmap from "./Mindmap";
 import MindFlow from "./MindFlow";
-import "./SmartGoals.css";
+import "./Brainstorming.css";
 
 export default function Brainstorming() {
   const [activeComponent, setActiveComponent] = useState("brainstorming");
@@ -34,7 +34,7 @@ export default function Brainstorming() {
               id="design-btn"
               onClick={() => setActiveComponent("mindmap")}
             >
-              <span>Mind Map</span>
+              <span>Blackboard</span>
             </div>
             <div
               className="col-sm-auto card rounded-5 btn"

@@ -1,206 +1,157 @@
-import React, { useState, useCallback } from "react";
+import React, { useRef, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import { Save } from "lucide-react";
-import ReactFlow, {
-  Controls,
-  Background,
-  addEdge,
-  useNodesState,
-  useEdgesState,
-  Connection,
-  Edge,
-  Node,
-} from "reactflow";
-import "reactflow/dist/style.css";
+
+interface Shape {
+  type: string;
+  x: number;
+  y: number;
+  color: string;
+}
 
 interface MindFlowProps {
   onBack: () => void;
 }
 
-const MessageModal = ({
-  message,
-  onClose,
-}: {
-  message: string;
-  onClose: () => void;
-}) => (
-  <div className="message-modal">
-    <div className="message-modal-content">
-      <p>{message}</p>
-      <button onClick={onClose} className="btn">
-        Close
-      </button>
-    </div>
-  </div>
-);
-
 export default function MindFlow({ onBack }: MindFlowProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([
-    {
-      id: "idea", // Static node ID
-      position: { x: 200, y: 200 },
-      data: { label: "Idea" },
-      type: "default",
-      style: {
-        width: 100,
-        height: 50,
-        backgroundColor: "#f0f0f0",
-        color: "#000000",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "16px",
-      },
-      sourcePosition: "right",
-      targetPosition: "left",
-    },
-  ]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [editNodeData, setEditNodeData] = useState({
-    label: "",
-    size: 40,
-    color: "#000000",
-    textColor: "#000000",
-  });
-  const [newNodeData, setNewNodeData] = useState({
-    label: "",
-    size: 40,
-    color: "#ffffff",
-    textColor: "#000000",
-  });
-
-  const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges]
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [color, setColor] = useState<string>("#ffffff");
+  const [drawingColor, setDrawingColor] = useState<string>("#000000");
+  const [drawingShape, setDrawingShape] = useState<string>("circle");
+  const [drawMode, setDrawMode] = useState<boolean>(true); // Default to draw mode
+  const [lineWidth, setLineWidth] = useState<number>(5); // Default line width
+  const [shapes, setShapes] = useState<Shape[]>([]);
+  const [draggingShapeIndex, setDraggingShapeIndex] = useState<number | null>(
+    null
   );
 
-  const isMobile = window.innerWidth <= 768;
-  const connectorStrokeWidth = isMobile ? 40 : 20;
+  const drawShapes = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-  const addNode = () => {
-    setNewNodeData({
-      label: "",
-      size: 40,
-      color: "#ffffff",
-      textColor: "#000000",
-    });
-    setIsAddModalOpen(true);
-  };
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-  const handleAddSubmit = () => {
-    const textLength = newNodeData.label.length;
-    const nodeWidth = Math.max(100, textLength * 10);
-    const nodeHeight = 50;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const newNode: Node = {
-      id: `${nodes.length + 1}`,
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: { label: newNodeData.label },
-      type: "default",
-      style: {
-        width: nodeWidth,
-        height: nodeHeight,
-        backgroundColor: newNodeData.color,
-        color: newNodeData.textColor,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "16px",
-      },
-      sourcePosition: "right",
-      targetPosition: "left",
-    };
-    setNodes((nds) => [...nds, newNode]);
-    setIsAddModalOpen(false);
-  };
-
-  const deleteNode = () => {
-    if (selectedNodeId) {
-      if (selectedNodeId === "idea") {
-        setMessage("The 'Idea' node cannot be deleted.");
-        return;
+    shapes.forEach((shape) => {
+      ctx.fillStyle = shape.color;
+      if (shape.type === "circle") {
+        ctx.beginPath();
+        ctx.arc(shape.x, shape.y, 20, 0, 2 * Math.PI);
+        ctx.fill();
+      } else if (shape.type === "rectangle") {
+        ctx.fillRect(shape.x - 20, shape.y - 20, 40, 40);
       }
-      setNodes((nds) => nds.filter((node) => node.id !== selectedNodeId));
-      setEdges((eds) =>
-        eds.filter(
-          (edge) =>
-            edge.source !== selectedNodeId && edge.target !== selectedNodeId
+    });
+  };
+
+  const handleAddShape = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = rect.width / 2; // Center of the canvas
+    const y = rect.height / 2;
+
+    const newShape: Shape = {
+      type: drawingShape,
+      x,
+      y,
+      color: drawingColor,
+    };
+
+    setShapes((prevShapes) => [...prevShapes, newShape]);
+    drawShapes();
+  };
+
+  const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const shapeIndex = shapes.findIndex((shape) => {
+      if (shape.type === "circle") {
+        const dx = x - shape.x;
+        const dy = y - shape.y;
+        return Math.sqrt(dx * dx + dy * dy) <= 20;
+      } else if (shape.type === "rectangle") {
+        return (
+          x >= shape.x - 20 &&
+          x <= shape.x + 20 &&
+          y >= shape.y - 20 &&
+          y <= shape.y + 20
+        );
+      }
+      return false;
+    });
+
+    if (shapeIndex !== -1) {
+      setDraggingShapeIndex(shapeIndex);
+    } else if (drawMode) {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      isDrawing.current = true;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (draggingShapeIndex !== null) {
+      setShapes((prevShapes) =>
+        prevShapes.map((shape, index) =>
+          index === draggingShapeIndex ? { ...shape, x, y } : shape
         )
       );
-      setSelectedNodeId(null);
-    } else {
-      setMessage("Please select a node to delete.");
+      drawShapes();
+    } else if (drawMode && isDrawing.current) {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.lineTo(x, y);
+      ctx.strokeStyle = drawingColor;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
     }
   };
 
-  const deleteEdge = () => {
-    if (selectedEdgeId) {
-      setEdges((eds) => eds.filter((edge) => edge.id !== selectedEdgeId));
-      setSelectedEdgeId(null);
-    } else {
-      setMessage("Please select a line to delete.");
+  const handleMouseUp = () => {
+    setDraggingShapeIndex(null);
+    isDrawing.current = false;
+  };
+
+  const handleBackgroundColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setColor(event.target.value);
+    drawShapes();
+  };
+
+  const handleShapeColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (draggingShapeIndex !== null) {
+      const newColor = event.target.value;
+      setShapes((prevShapes) =>
+        prevShapes.map((shape, index) =>
+          index === draggingShapeIndex ? { ...shape, color: newColor } : shape
+        )
+      );
+      drawShapes();
     }
   };
 
-  const editNode = () => {
-    if (selectedNodeId) {
-      const selectedNode = nodes.find((node) => node.id === selectedNodeId);
-      if (selectedNode) {
-        setEditNodeData({
-          label: selectedNode.data.label || "",
-          size: selectedNode.style?.width || 40,
-          color: selectedNode.style?.backgroundColor || "#000000",
-          textColor: selectedNode.style?.color || "#000000",
-        });
-        setIsEditModalOpen(true);
-      }
-    } else {
-      setMessage("Please select a node to edit.");
-    }
-  };
-
-  const handleEditSubmit = () => {
-    const textLength = editNodeData.label.length;
-    const nodeWidth = Math.max(100, textLength * 10);
-    const nodeHeight = 50;
-
-    setNodes((nds) =>
-      nds.map((node) =>
-        node.id === selectedNodeId
-          ? {
-              ...node,
-              data: { ...node.data, label: editNodeData.label },
-              style: {
-                ...node.style,
-                width: nodeWidth,
-                height: nodeHeight,
-                backgroundColor: editNodeData.color,
-                color: editNodeData.textColor,
-                fontSize: "16px",
-              },
-              sourcePosition: "right",
-              targetPosition: "left",
-            }
-          : node
-      )
-    );
-    setIsEditModalOpen(false);
-  };
-
-  const onNodeClick = (event: React.MouseEvent, node: Node) => {
-    setSelectedNodeId(node.id);
-    setSelectedEdgeId(null);
-  };
-
-  const onEdgeClick = (event: React.MouseEvent, edge: Edge) => {
-    setSelectedEdgeId(edge.id);
-    setSelectedNodeId(null);
-  };
+  const isDrawing = useRef<boolean>(false);
 
   return (
     <React.Fragment>
@@ -210,134 +161,68 @@ export default function MindFlow({ onBack }: MindFlowProps) {
           onClick={onBack}
           style={{ cursor: "pointer" }}
         />
-        <span id="title">Mind Map</span>
+        <span id="title">Blackboard</span>
         <Save size={30} />
       </div>
-
-      <div id="flow">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          onEdgeClick={onEdgeClick}
-          fitView
-          defaultEdgeOptions={{
-            style: { strokeWidth: connectorStrokeWidth },
-          }}
-        >
-          <Controls />
-          <Background />
-        </ReactFlow>
+      <div className="controls">
+        <label>
+          Background Color:
+          <input
+            type="color"
+            value={color}
+            onChange={handleBackgroundColorChange}
+          />
+        </label>
+        <label>
+          Drawing Color:
+          <input
+            type="color"
+            value={drawingColor}
+            onChange={(e) => setDrawingColor(e.target.value)}
+          />
+        </label>
+        <label>
+          Line Width:
+          <input
+            type="range"
+            min="1"
+            max="20"
+            value={lineWidth}
+            onChange={(e) => setLineWidth(Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Shape:
+          <select
+            value={drawingShape}
+            onChange={(e) => setDrawingShape(e.target.value)}
+          >
+            <option value="circle">Circle</option>
+            <option value="rectangle">Rectangle</option>
+          </select>
+        </label>
+        <button onClick={handleAddShape}>Add Shape</button>
+        {draggingShapeIndex !== null && (
+          <label>
+            Change Shape Color:
+            <input type="color" onChange={handleShapeColorChange} />
+          </label>
+        )}
       </div>
-      <div
-        className={`add-node-container ${
-          isAddModalOpen || isEditModalOpen ? "hidden" : ""
-        }`}
-      >
-        <button onClick={addNode} className="btn">
-          Add Node
-        </button>
-        <button onClick={deleteNode} className="btn">
-          Delete Node
-        </button>
-        <button onClick={editNode} className="btn">
-          Edit Node
-        </button>
-        <button onClick={deleteEdge} className="btn">
-          Delete Line
-        </button>
-      </div>
-
-      {isAddModalOpen && (
-        <div className="edit-modal">
-          <h3>Add Node</h3>
-          <label>
-            Name:
-            <input
-              type="text"
-              value={newNodeData.label}
-              onChange={(e) =>
-                setNewNodeData({ ...newNodeData, label: e.target.value })
-              }
-            />
-          </label>
-          <label>
-            Background Color:
-            <input
-              type="color"
-              value={newNodeData.color}
-              onChange={(e) =>
-                setNewNodeData({ ...newNodeData, color: e.target.value })
-              }
-            />
-          </label>
-          <label>
-            Text Color:
-            <input
-              type="color"
-              value={newNodeData.textColor}
-              onChange={(e) =>
-                setNewNodeData({ ...newNodeData, textColor: e.target.value })
-              }
-            />
-          </label>
-          <button onClick={handleAddSubmit} className="btn">
-            Add
-          </button>
-          <button onClick={() => setIsAddModalOpen(false)} className="btn">
-            Cancel
-          </button>
-        </div>
-      )}
-
-      {isEditModalOpen && (
-        <div className="edit-modal">
-          <h3>Edit Node</h3>
-          <label>
-            Name:
-            <input
-              type="text"
-              value={editNodeData.label}
-              onChange={(e) =>
-                setEditNodeData({ ...editNodeData, label: e.target.value })
-              }
-            />
-          </label>
-          <label>
-            Background Color:
-            <input
-              type="color"
-              value={editNodeData.color}
-              onChange={(e) =>
-                setEditNodeData({ ...editNodeData, color: e.target.value })
-              }
-            />
-          </label>
-          <label>
-            Text Color:
-            <input
-              type="color"
-              value={editNodeData.textColor}
-              onChange={(e) =>
-                setEditNodeData({ ...editNodeData, textColor: e.target.value })
-              }
-            />
-          </label>
-          <button onClick={handleEditSubmit} className="btn">
-            Save
-          </button>
-          <button onClick={() => setIsEditModalOpen(false)} className="btn">
-            Cancel
-          </button>
-        </div>
-      )}
-
-      {message && (
-        <MessageModal message={message} onClose={() => setMessage(null)} />
-      )}
+      <canvas
+        ref={canvasRef}
+        width={800}
+        height={600}
+        style={{
+          border: "1px solid black",
+          backgroundColor: color,
+          cursor: draggingShapeIndex !== null ? "move" : drawMode ? "crosshair" : "default",
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp} // Stop drawing if the mouse leaves the canvas
+      ></canvas>
     </React.Fragment>
   );
 }
