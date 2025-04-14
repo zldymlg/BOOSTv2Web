@@ -12,7 +12,7 @@ import FlashCards from "./Flashcard.tsx";
 import SettingsTabs from "./Settings.tsx";
 import Profile from "./Profile.tsx";
 import Reward from "./Reward.tsx";
-import { FiMenu, FiLogOut } from "react-icons/fi";
+import { FiMenu } from "react-icons/fi";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
