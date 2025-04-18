@@ -143,21 +143,7 @@ export default function Sidebar() {
             alt="User Avatar"
             className="profile-avatar"
             onClick={() => setActiveTab("Profile")}
-            style={{ width: "4vw", height: "4vw", borderRadius: "50%" }}
-          />
-          {!isCollapsed && (
-            <span className="username px-2">{userData.name}</span>
-          )}
-        </div>
-
-        {/* Profile Section */}
-        <div className="user-section" style={{ cursor: "pointer" }}>
-          <img
-            src={userData.profilePictureUrl || "default-avatar.png"}
-            alt="User Avatar"
-            className="profile-avatar"
-            onClick={() => setActiveTab("Profile")}
-            style={{ width: "4vw", height: "4vw", borderRadius: "50%" }}
+            id="user-avatar"
           />
           {!isCollapsed && (
             <>
