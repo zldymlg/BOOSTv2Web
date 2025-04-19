@@ -1,5 +1,7 @@
 import React, { useRef, useState } from "react";
-import "./Blackboard.css";
+import "./Whiteboard.css";
+import { IoIosArrowBack } from "react-icons/io";
+import { Save } from "lucide-react";
 
 interface BlackboardProps {
   onBack: () => void;
@@ -11,7 +13,6 @@ export default function Blackboard({ onBack }: BlackboardProps) {
   const [tool, setTool] = useState<"draw" | "eraser">("draw");
   const [color, setColor] = useState("#000000");
   const [lineWidth, setLineWidth] = useState(5);
-  const [brushType, setBrushType] = useState<"round" | "square">("round");
   const [zoom, setZoom] = useState(1);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
 
@@ -45,7 +46,7 @@ export default function Blackboard({ onBack }: BlackboardProps) {
     }
 
     ctx.lineWidth = lineWidth;
-    ctx.lineCap = brushType;
+    ctx.lineCap = "round"; // Default to round brush
     ctx.stroke();
   };
 
@@ -63,6 +64,17 @@ export default function Blackboard({ onBack }: BlackboardProps) {
 
   return (
     <div className="blackboard-container">
+
+      <div className="header-container d-flex align-items-center justify-content-between p-3">
+        <IoIosArrowBack
+          size={30}
+          onClick={onBack}
+          style={{ cursor: "pointer" }}
+        />
+        <h2 className="text-center flex-grow-1 m-0">Whiteboard</h2>
+        <Save size={30} style={{ cursor: "pointer" }} />
+      </div>
+
       <div className="toolbar">
         <button onClick={() => setTool("draw")}>✏️ Draw</button>
         <button onClick={() => setTool("eraser")}>🩹 Eraser</button>
@@ -72,22 +84,18 @@ export default function Blackboard({ onBack }: BlackboardProps) {
           onChange={(e) => setColor(e.target.value)}
           title="Choose Color"
         />
-        <input
-          type="range"
-          min="1"
-          max="20"
-          value={lineWidth}
-          onChange={(e) => setLineWidth(Number(e.target.value))}
-          title="Line Width"
-        />
-        <select
-          value={brushType}
-          onChange={(e) => setBrushType(e.target.value as "round" | "square")}
-          title="Brush Type"
-        >
-          <option value="round">Round</option>
-          <option value="square">Square</option>
-        </select>
+        <label>
+          Line Width:
+          <input
+            type="number"
+            min="1"
+            max="20"
+            value={lineWidth}
+            onChange={(e) => setLineWidth(Number(e.target.value))}
+            style={{ width: "60px" }}
+            title="Line Width"
+          />
+        </label>
         <button onClick={() => handleZoom("in")}>🔍 Zoom In</button>
         <button onClick={() => handleZoom("out")}>🔍 Zoom Out</button>
         <label>
