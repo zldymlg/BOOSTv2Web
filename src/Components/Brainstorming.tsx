@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { BsSearch } from "react-icons/bs";
 import SmartGoals from "./SmartGoals";
-import Mindmap from "./Mindmap";
+import Mindmap from "./Blackboard";
 import MindFlow from "./MindFlow";
 import "./Brainstorming.css";
 
